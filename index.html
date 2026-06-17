@@ -714,10 +714,13 @@ body {
   display: none;
   position: fixed; inset: 0;
   background: rgba(10,5,0,.92);
-  z-index: 400;
+  z-index: 2000;
   align-items: center; justify-content: center;
   flex-direction: column;
   gap: 20px;
+  /* cover dynamic viewport (notches, browser chrome) */
+  min-height: 100%;
+  padding: 20px 0 30px;
 }
 #card-modal.active { display: flex; }
 
@@ -727,12 +730,12 @@ body {
   background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
   border: 3px solid #8b6914;
   border-radius: 14px;
-  padding: 28px 22px 24px;
+  padding: 28px 22px 56px;
   text-align: center;
   position: relative;
   box-shadow: 0 12px 50px rgba(0,0,0,.7);
   animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  max-height: 88vh;
+  max-height: calc(100vh - 80px);
   overflow-y: auto;
 }
 .modal-card::-webkit-scrollbar { width: 4px; }
@@ -1740,11 +1743,15 @@ function openModal(cardIdx, position, isUpright) {
 
   const mc = document.querySelector('.modal-card');
   mc.scrollTop = 0;
+  // Hide infinite bar so it doesn't bleed under the modal overlay
+  document.getElementById('infinite-bar').style.visibility = 'hidden';
   document.getElementById('card-modal').classList.add('active');
 }
 
 function closeModal() {
   document.getElementById('card-modal').classList.remove('active');
+  // Restore infinite bar
+  document.getElementById('infinite-bar').style.visibility = '';
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
