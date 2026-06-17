@@ -351,8 +351,13 @@ body {
 }
 .ibar-pos { font-size: 9px; color: #b09050; letter-spacing: 1px; font-family: sans-serif; }
 
-/* Screen padding when bar is visible */
-#screen-deck.infinite-active { padding-bottom: 200px; }
+/* Grid scrollable when bar is visible */
+#screen-deck.infinite-active #grid-area {
+  overflow-y: auto;
+  padding-bottom: 230px;
+}
+#screen-deck.infinite-active #grid-area::-webkit-scrollbar { width: 4px; }
+#screen-deck.infinite-active #grid-area::-webkit-scrollbar-thumb { background: #c8a84b; border-radius: 2px; }
 
 #infinite-done-btn {
   display: none;
