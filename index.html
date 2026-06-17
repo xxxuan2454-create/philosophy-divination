@@ -713,14 +713,9 @@ body {
 #card-modal {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(10,5,0,.92);
+  background: rgba(10,5,0,.97);
   z-index: 2000;
   align-items: center; justify-content: center;
-  flex-direction: column;
-  gap: 20px;
-  /* cover dynamic viewport (notches, browser chrome) */
-  min-height: 100%;
-  padding: 20px 0 30px;
 }
 #card-modal.active { display: flex; }
 
@@ -730,12 +725,15 @@ body {
   background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
   border: 3px solid #8b6914;
   border-radius: 14px;
-  padding: 28px 22px 56px;
+  padding: 28px 22px 32px;
   text-align: center;
   position: relative;
   box-shadow: 0 12px 50px rgba(0,0,0,.7);
   animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
-  max-height: calc(100vh - 80px);
+  /* Use svh (small viewport height) for reliable mobile fit;
+     fall back to vh in older browsers */
+  max-height: 88vh;
+  max-height: 88svh;
   overflow-y: auto;
 }
 .modal-card::-webkit-scrollbar { width: 4px; }
@@ -764,11 +762,131 @@ body {
 .modal-kw        { font-size: 13px; color: #5a4020; line-height: 1.8; }
 .modal-hint      { font-size: 11px; color: #6b4810; font-style: italic; margin-top: 12px; line-height: 1.6; }
 
+.modal-close-btn {
+  position: absolute;
+  top: 10px; right: 12px;
+  background: none;
+  border: none;
+  font-size: 22px;
+  color: #9a7848;
+  cursor: pointer;
+  line-height: 1;
+  padding: 4px 6px;
+  border-radius: 4px;
+  transition: color 0.15s;
+}
+.modal-close-btn:hover { color: #4a2800; }
+
 .modal-close-hint {
-  color: #7a6040;
-  font-size: 12px;
+  color: #9a7848;
+  font-size: 11px;
   font-family: sans-serif;
   letter-spacing: 1px;
+  margin-top: 20px;
+  padding-bottom: 4px;
+}
+
+/* ── AI 解牌区 ── */
+.modal-ai-section {
+  margin-top: 20px;
+  text-align: left;
+}
+.modal-ai-textarea {
+  width: 100%;
+  min-height: 70px;
+  max-height: 140px;
+  resize: vertical;
+  background: rgba(250,240,215,.8);
+  border: 1.5px solid rgba(139,105,20,.35);
+  border-radius: 8px;
+  padding: 10px 12px;
+  font-size: 13px;
+  font-family: 'Georgia', 'STSong', '宋体', serif;
+  color: #2e1800;
+  line-height: 1.7;
+  outline: none;
+  box-sizing: border-box;
+  transition: border-color 0.2s;
+}
+.modal-ai-textarea::placeholder { color: #b09060; font-style: italic; }
+.modal-ai-textarea:focus { border-color: #a07828; }
+
+.modal-ai-btn {
+  width: 100%;
+  margin-top: 10px;
+  background: linear-gradient(160deg, #7a3a06, #5a2604);
+  color: #f8edd5;
+  border: none;
+  border-radius: 8px;
+  padding: 11px 0;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.2s;
+}
+.modal-ai-btn:hover:not(:disabled) { transform: translateY(-1px); box-shadow: 0 4px 14px rgba(0,0,0,.3); }
+.modal-ai-btn:disabled { opacity: 0.45; cursor: default; }
+
+.modal-ai-response {
+  margin-top: 14px;
+  padding: 12px 14px;
+  background: rgba(139,105,20,.07);
+  border-left: 2.5px solid rgba(139,105,20,.4);
+  border-radius: 6px;
+  font-size: 13px;
+  color: #2e1800;
+  line-height: 1.8;
+  text-align: left;
+  display: none;
+}
+.modal-ai-response.visible { display: block; }
+
+.modal-ai-key-row {
+  display: flex;
+  align-items: center;
+  justify-content: flex-end;
+  gap: 8px;
+  margin-top: 10px;
+}
+.modal-ai-key-status { font-size: 11px; color: #9a7848; font-family: sans-serif; }
+.modal-ai-key-status.set { color: #5a8a3a; }
+.modal-ai-key-toggle {
+  background: none;
+  border: 1px solid rgba(139,105,20,.3);
+  border-radius: 5px;
+  padding: 3px 9px;
+  font-size: 11px;
+  color: #9a7848;
+  cursor: pointer;
+  font-family: sans-serif;
+}
+.modal-ai-key-toggle:hover { border-color: #8b6914; color: #4a2800; }
+.modal-ai-key-panel {
+  margin-top: 8px;
+  display: flex;
+  gap: 6px;
+}
+.modal-ai-key-input {
+  flex: 1;
+  background: rgba(250,240,215,.8);
+  border: 1.5px solid rgba(139,105,20,.35);
+  border-radius: 6px;
+  padding: 6px 10px;
+  font-size: 12px;
+  color: #2e1800;
+  outline: none;
+}
+.modal-ai-key-input:focus { border-color: #a07828; }
+.modal-ai-key-save {
+  background: linear-gradient(160deg, #7a3a06, #5a2604);
+  color: #f8edd5;
+  border: none;
+  border-radius: 6px;
+  padding: 6px 14px;
+  font-size: 12px;
+  cursor: pointer;
+  white-space: nowrap;
 }
 .modal-section-title {
   font-size: 9px;
@@ -926,6 +1044,7 @@ body {
 <!-- ═══════════════════ CARD DETAIL MODAL ═══════════════════ -->
 <div id="card-modal" onclick="closeModal()">
   <div class="modal-card" onclick="event.stopPropagation()">
+    <button class="modal-close-btn" onclick="closeModal()">×</button>
     <div class="modal-pos"    id="m-pos"></div>
     <div class="modal-orient" id="m-orient"></div>
     <div class="modal-sym"    id="m-sym"></div>
@@ -939,8 +1058,32 @@ body {
     <div class="modal-divider" style="margin-top:18px"></div>
     <div class="modal-section-title">✦ 哲学溯源 ✦</div>
     <div id="m-philosophers"></div>
+
+    <div class="modal-divider" style="margin-top:20px"></div>
+    <div class="modal-section-title">✦ AI 解牌 ✦</div>
+    <div class="modal-ai-section">
+      <textarea
+        id="m-ai-input"
+        class="modal-ai-textarea"
+        placeholder="在此输入你的问题或当下情境，例如：我最近在犹豫是否要换工作……"
+        oninput="onAiInputChange()"
+        rows="3"
+      ></textarea>
+      <button id="m-ai-btn" class="modal-ai-btn" onclick="askAI()" disabled>✦ AI 解牌 ✦</button>
+      <div id="m-ai-response" class="modal-ai-response"></div>
+      <div class="modal-ai-key-row">
+        <span id="m-key-status" class="modal-ai-key-status"></span>
+        <button class="modal-ai-key-toggle" onclick="toggleKeyPanel()">⚙ 设置 API Key</button>
+      </div>
+      <div id="m-key-panel" class="modal-ai-key-panel" style="display:none">
+        <input id="m-key-input" class="modal-ai-key-input" type="password"
+               placeholder="sk-xxxx（DeepSeek API Key）" />
+        <button class="modal-ai-key-save" onclick="saveKey()">保存</button>
+      </div>
+    </div>
+
+    <div class="modal-close-hint">点击卡片外侧关闭</div>
   </div>
-  <div class="modal-close-hint">点击任意处关闭</div>
 </div>
 
 <script>
@@ -1713,8 +1856,13 @@ function onExtraCardClick(el, cardIdx) {
 /* ═══════════════════════════════════════════════════════
    CARD DETAIL MODAL
 ═══════════════════════════════════════════════════════ */
+// Current card context for AI reading
+let _aiCard = null;
+
 function openModal(cardIdx, position, isUpright) {
   const card = CARDS[cardIdx];
+  _aiCard = { card, position, isUpright };
+
   document.getElementById('m-pos').textContent    = position;
   document.getElementById('m-orient').textContent = isUpright ? '✦ 正位 ✦' : '✦ 逆位 ✦';
   document.getElementById('m-orient').className   = 'modal-orient ' + (isUpright ? 'upright' : 'reversed');
@@ -1741,17 +1889,133 @@ function openModal(cardIdx, position, isUpright) {
     });
   }
 
+  // Reset AI area
+  document.getElementById('m-ai-input').value = '';
+  document.getElementById('m-ai-btn').disabled = true;
+  const resp = document.getElementById('m-ai-response');
+  resp.textContent = '';
+  resp.classList.remove('visible');
+  updateKeyStatus();
+  document.getElementById('m-key-panel').style.display = 'none';
+
   const mc = document.querySelector('.modal-card');
   mc.scrollTop = 0;
-  // Hide infinite bar so it doesn't bleed under the modal overlay
   document.getElementById('infinite-bar').style.visibility = 'hidden';
   document.getElementById('card-modal').classList.add('active');
 }
 
 function closeModal() {
   document.getElementById('card-modal').classList.remove('active');
-  // Restore infinite bar
   document.getElementById('infinite-bar').style.visibility = '';
+}
+
+function onAiInputChange() {
+  const val = document.getElementById('m-ai-input').value.trim();
+  document.getElementById('m-ai-btn').disabled = val.length === 0;
+}
+
+function updateKeyStatus() {
+  const key = localStorage.getItem('ds_api_key') || '';
+  const el = document.getElementById('m-key-status');
+  if (key) {
+    el.textContent = '✓ Key 已设置';
+    el.className = 'modal-ai-key-status set';
+  } else {
+    el.textContent = '未设置 Key';
+    el.className = 'modal-ai-key-status';
+  }
+}
+
+function toggleKeyPanel() {
+  const panel = document.getElementById('m-key-panel');
+  const visible = panel.style.display !== 'none';
+  panel.style.display = visible ? 'none' : 'flex';
+  if (!visible) {
+    const stored = localStorage.getItem('ds_api_key') || '';
+    document.getElementById('m-key-input').value = stored;
+  }
+}
+
+function saveKey() {
+  const val = document.getElementById('m-key-input').value.trim();
+  if (val) {
+    localStorage.setItem('ds_api_key', val);
+  } else {
+    localStorage.removeItem('ds_api_key');
+  }
+  document.getElementById('m-key-panel').style.display = 'none';
+  updateKeyStatus();
+}
+
+async function askAI() {
+  if (!_aiCard) return;
+  const question = document.getElementById('m-ai-input').value.trim();
+  if (!question) return;
+
+  const apiKey = localStorage.getItem('ds_api_key') || '';
+  if (!apiKey) {
+    document.getElementById('m-key-panel').style.display = 'flex';
+    document.getElementById('m-key-input').focus();
+    return;
+  }
+
+  const btn  = document.getElementById('m-ai-btn');
+  const resp = document.getElementById('m-ai-response');
+  btn.disabled = true;
+  btn.textContent = '解读中…';
+  resp.textContent = '';
+  resp.classList.remove('visible');
+
+  const { card, position, isUpright } = _aiCard;
+  const lore = LORE[card.id];
+  const divinationText = lore ? lore.divination : '';
+
+  const systemPrompt = `你是一位融合哲学深度与直觉智慧的占卜解读师。你的解读风格：文字克制而有力，善用哲学隐喻，不过度安慰也不消极，帮助提问者看到当下处境的多个维度。回答控制在150-250字，用中文。`;
+
+  const userPrompt = `提问者当前抽到的牌：
+• 牌名：${card.name}（${card.sub || ''}）
+• 位置：${position}
+• 方向：${isUpright ? '正位' : '逆位'}
+• 关键词：${card.kw}
+• 核心寓意：${card.hint}
+• 占卜解读：${divinationText}
+
+提问者的问题或情境：
+${question}
+
+请结合这张牌的哲学内核与提问者的具体情境，给出一段有深度的占卜解读。`;
+
+  try {
+    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+      method: 'POST',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Bearer ' + apiKey
+      },
+      body: JSON.stringify({
+        model: 'deepseek-chat',
+        messages: [
+          { role: 'system', content: systemPrompt },
+          { role: 'user',   content: userPrompt }
+        ],
+        max_tokens: 400,
+        temperature: 0.85
+      })
+    });
+
+    if (!res.ok) throw new Error('API 错误 ' + res.status);
+    const data = await res.json();
+    const text = data.choices?.[0]?.message?.content || '未能获取解读，请稍后重试。';
+    resp.textContent = text;
+    resp.classList.add('visible');
+    resp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+  } catch (err) {
+    resp.textContent = '解读失败，请检查网络或 Key 是否正确。（' + err.message + '）';
+    resp.classList.add('visible');
+  } finally {
+    btn.disabled = false;
+    btn.textContent = '✦ AI 解牌 ✦';
+  }
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
