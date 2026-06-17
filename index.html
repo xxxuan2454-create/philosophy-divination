@@ -672,7 +672,7 @@ body {
       </button>
       <button class="spread-btn" onclick="showAllCards()" style="grid-column: 1 / -1; background: transparent; border: 1px dashed rgba(180,148,70,.4); color:#9a7848;">
         <span class="sname" style="font-weight:normal; font-size:14px; letter-spacing:3px; color:#7a6038;">全部卡牌</span>
-        <span class="sdesc">浏览四十四张哲学牌的完整含义</span>
+        <span class="sdesc">浏览四十六张哲学牌的完整含义</span>
       </button>
     </div>
   </div>
@@ -782,6 +782,8 @@ const CARDS = [
   { id:42, name:"诞生/起源", sub:"Arché",              sym:"✦",  kw:"起点 · 原初 · 不可追溯 · 涌现",  hint:"每一个起源都已是对更早起源的遗忘" },
   { id:43, name:"抵抗",      sub:"Résistance",         sym:"⊻",  kw:"反力 · 拒绝 · 裂缝 · 主体性",   hint:"权力所到之处，抵抗已然在场" },
   { id:44, name:"沉默",      sub:"Silence",            sym:"·",  kw:"不可言说 · 边界 · 留白 · 虚空",  hint:"语言止步之处，意义才真正开始" },
+  { id:45, name:"遗忘",      sub:"Oubli",              sym:"⌀",  kw:"消散 · 解脱 · 尼采 · 生命力",   hint:"遗忘不是失去，而是让生命得以继续" },
+  { id:46, name:"超越",      sub:"Transcendance",      sym:"↑",  kw:"超出 · 彼岸 · 无限 · 他者",     hint:"总有某物超出你所能把握的边界" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -850,7 +852,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(44).keys()]);
+  shuffledDeck    = shuffle([...Array(46).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
