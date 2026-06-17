@@ -1798,6 +1798,12 @@ function startInfinite() {
 function drawInfiniteCard(el, cardIdx) {
   if (infiniteDrawn.length >= infiniteMax) return;
 
+  // Pick a truly random card each click, different from the last drawn
+  const lastIdx = infiniteDrawn.length > 0 ? infiniteDrawn[infiniteDrawn.length - 1].cardIdx : -1;
+  let newIdx;
+  do { newIdx = Math.floor(Math.random() * 47); } while (newIdx === lastIdx);
+  cardIdx = newIdx;
+
   const isUpright = Math.random() > 0.35;
   infiniteDrawn.push({ cardIdx, isUpright });
   const n = infiniteDrawn.length;
