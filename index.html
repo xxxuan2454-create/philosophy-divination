@@ -313,45 +313,61 @@ body {
 }
 .max-start-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(0,0,0,.25); }
 
-/* ── Infinite results in right panel ── */
-#infinite-results {
+/* ── Infinite bottom display ── */
+#infinite-bar {
   display: none;
+  position: fixed;
+  bottom: 0; left: 0; right: 0;
+  background: rgba(30, 18, 4, 0.92);
+  border-top: 1px solid #c8a84b;
+  padding: 14px 20px 16px;
+  z-index: 50;
   flex-direction: column;
-  gap: 8px;
-  overflow-y: auto;
-  flex: 1;
-  padding-right: 2px;
+  gap: 10px;
 }
-#infinite-results::-webkit-scrollbar { width: 4px; }
-#infinite-results::-webkit-scrollbar-thumb { background: #c8a84b; border-radius: 2px; }
+#infinite-bar.active { display: flex; }
 
-.ir-entry {
-  background: #fdf6e8;
-  border: 1px solid rgba(160,125,55,.38);
-  border-radius: 8px;
-  padding: 10px 12px;
-  cursor: pointer;
-  transition: all 0.18s;
-  animation: irSlide 0.3s ease both;
-  display: flex; align-items: center; gap: 10px;
+#infinite-bar-header {
+  display: flex; align-items: center; justify-content: space-between;
 }
-.ir-entry:hover { background: #fff; border-color: #c8a84b; transform: translateX(2px); }
-@keyframes irSlide {
-  from { opacity: 0; transform: translateX(12px); }
-  to   { opacity: 1; transform: translateX(0); }
-}
-.ir-num  { font-size: 10px; color: #a08050; min-width: 20px; font-family: sans-serif; }
-.ir-sym  { font-size: 18px; min-width: 22px; text-align: center; }
-.ir-info { flex: 1; }
-.ir-name { font-size: 13px; font-weight: bold; color: #1e1000; }
-.ir-orient { font-size: 9px; font-family: sans-serif; margin-top: 2px; }
-.ir-orient.upright  { color: #4a7a1a; }
-.ir-orient.reversed { color: #6a4090; }
-
 #infinite-counter {
-  font-size: 13px; color: #7a5c2a;
-  padding: 4px 0; border-bottom: 1px solid rgba(200,168,75,.3);
+  font-size: 12px; color: #c8a040; letter-spacing: 2px; font-family: sans-serif;
 }
+#infinite-bar-cards {
+  display: flex;
+  gap: 12px;
+  overflow-x: auto;
+  padding-bottom: 4px;
+}
+#infinite-bar-cards::-webkit-scrollbar { height: 3px; }
+#infinite-bar-cards::-webkit-scrollbar-thumb { background: #c8a84b; border-radius: 2px; }
+
+/* Card in infinite bar — same look as result cards */
+.ibar-card-wrap {
+  display: flex; flex-direction: column; align-items: center; gap: 5px;
+  flex-shrink: 0;
+  cursor: pointer;
+  animation: revealCard 0.45s ease both;
+}
+.ibar-pos { font-size: 9px; color: #b09050; letter-spacing: 1px; font-family: sans-serif; }
+
+/* Screen padding when bar is visible */
+#screen-deck.infinite-active { padding-bottom: 200px; }
+
+#infinite-done-btn {
+  display: none;
+  background: rgba(200,168,75,.2);
+  border: 1px solid #c8a84b;
+  border-radius: 6px;
+  padding: 6px 16px;
+  color: #f0d890;
+  font-family: inherit;
+  font-size: 12px;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+}
+#infinite-done-btn:hover { background: rgba(200,168,75,.35); }
 
 /* Card flash animation for infinite draw */
 @keyframes cardFlash {
@@ -788,6 +804,15 @@ body {
   </div>
 </div>
 
+<!-- ═══════════════════ INFINITE BOTTOM BAR ═══════════════════ -->
+<div id="infinite-bar">
+  <div id="infinite-bar-header">
+    <div id="infinite-counter">已翻 0 / 5 张</div>
+    <button id="infinite-done-btn" onclick="resetApp()">重新占卜</button>
+  </div>
+  <div id="infinite-bar-cards"></div>
+</div>
+
 <!-- ═══════════════════ SCREEN 3: ALL CARDS BROWSER ═══════════════════ -->
 <div id="screen-cards" class="screen">
   <div class="cards-browser-header">
@@ -823,8 +848,6 @@ body {
       <span id="needed-count" style="font-size:52px;color:#8b3c0a;display:block;line-height:1">3</span> 张牌
     </div>
     <div id="progress"></div>
-    <div id="infinite-counter"></div>
-    <div id="infinite-results"></div>
     <button id="reveal-btn" onclick="showResults()">揭示占卜结果</button>
   </div>
 </div>
@@ -1267,31 +1290,29 @@ function showMaxModal() {
 }
 
 function startInfinite() {
-  infiniteMax   = parseInt(document.getElementById('max-slider').value);
-  infiniteDrawn = [];
+  infiniteMax    = parseInt(document.getElementById('max-slider').value);
+  infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
   shuffledDeck   = shuffle([...Array(47).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
-  document.getElementById('screen-deck').classList.add('active');
+  document.getElementById('screen-deck').classList.add('active', 'infinite-active');
   document.getElementById('results-overlay').classList.remove('active');
 
-  // Right panel setup
+  // Right panel
   document.getElementById('instruction').innerHTML =
-    `点击任意牌<br><span style="font-size:14px;color:#7a5c2a;display:block;line-height:2">翻开后可继续翻下一张</span>`;
+    `点击任意牌<br><span style="font-size:13px;color:#7a5c2a;display:block;line-height:2">可重复翻牌</span>`;
   document.getElementById('progress').style.display = 'none';
   document.getElementById('reveal-btn').style.display = 'none';
-  document.getElementById('extra-btn') && (document.getElementById('extra-btn').style.display = 'none');
 
-  const counter = document.getElementById('infinite-counter');
-  counter.textContent = `已翻 0 / ${infiniteMax} 张`;
-  counter.style.display = 'block';
-
-  const ir = document.getElementById('infinite-results');
-  ir.innerHTML = '';
-  ir.style.display = 'flex';
+  // Bottom bar
+  const bar = document.getElementById('infinite-bar');
+  bar.classList.add('active');
+  document.getElementById('infinite-bar-cards').innerHTML = '';
+  document.getElementById('infinite-counter').textContent = `已翻 0 / ${infiniteMax} 张`;
+  document.getElementById('infinite-done-btn').style.display = 'none';
 
   renderGrid();
 }
@@ -1301,46 +1322,49 @@ function drawInfiniteCard(el, cardIdx) {
 
   const isUpright = Math.random() > 0.35;
   infiniteDrawn.push({ cardIdx, isUpright });
+  const n = infiniteDrawn.length;
 
-  // Flash the card briefly
+  // Flash card briefly
   el.classList.add('flash');
   el.addEventListener('animationend', () => el.classList.remove('flash'), { once: true });
 
-  const card = CARDS[cardIdx];
-  const n    = infiniteDrawn.length;
-
-  // Add entry to right panel
-  const entry = document.createElement('div');
-  entry.className = 'ir-entry';
-  entry.style.animationDelay = '0s';
-  entry.innerHTML = `
-    <span class="ir-num">第${n}张</span>
-    <span class="ir-sym">${card.sym}</span>
-    <div class="ir-info">
-      <div class="ir-name">${card.name}</div>
-      <div class="ir-orient ${isUpright ? 'upright' : 'reversed'}">${isUpright ? '正位' : '逆位'}</div>
-    </div>`;
-  entry.addEventListener('click', () => openModal(cardIdx, `第${n}张`, isUpright));
-  document.getElementById('infinite-results').appendChild(entry);
-  entry.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
-
   // Update counter
   document.getElementById('infinite-counter').textContent = `已翻 ${n} / ${infiniteMax} 张`;
+
+  // Build card in bottom bar using the same result-card style
+  const wrap = document.createElement('div');
+  wrap.className = 'ibar-card-wrap';
+  wrap.style.animationDelay = '0s';
+
+  const rc = document.createElement('div');
+  rc.className = 'result-card' + (isUpright ? '' : ' reversed');
+  const card = CARDS[cardIdx];
+  rc.innerHTML = `
+    <div class="card-content-inner">
+      <div class="rc-pos">第 ${n} 张</div>
+      <div class="rc-orientation ${isUpright ? 'upright' : 'reversed'}">${isUpright ? '正位' : '逆位'}</div>
+      <div class="rc-sym">${card.sym}</div>
+      <div class="rc-name">${card.name}</div>
+      ${card.sub ? `<div class="rc-sub">${card.sub}</div>` : ''}
+      <div class="rc-kw">${card.kw}</div>
+      <div class="rc-hint">${card.hint}</div>
+    </div>`;
+  rc.addEventListener('click', () => openModal(cardIdx, `第 ${n} 张`, isUpright));
+
+  wrap.appendChild(rc);
+  document.getElementById('infinite-bar-cards').appendChild(wrap);
+
+  // Scroll the bar to show latest card
+  wrap.scrollIntoView({ behavior: 'smooth', inline: 'end', block: 'nearest' });
 
   // Done?
   if (n >= infiniteMax) {
     phase = 'revealed';
     document.getElementById('instruction').innerHTML =
       `<span style="font-size:16px;color:#1e1000">翻牌完成</span><br>
-       <span style="font-size:12px;color:#7a5c2a;line-height:2">点击右侧卡牌查看大图</span>`;
+       <span style="font-size:12px;color:#7a5c2a;line-height:2">点击底部卡牌查看大图</span>`;
     document.querySelectorAll('.card').forEach(c => c.classList.add('disabled'));
-    // Show reset button
-    const resetBtn = document.createElement('button');
-    resetBtn.className = 'res-btn ghost';
-    resetBtn.style.cssText = 'margin-top:8px;font-size:13px;padding:8px 16px;';
-    resetBtn.textContent = '重新占卜';
-    resetBtn.onclick = resetApp;
-    document.getElementById('right-panel').appendChild(resetBtn);
+    document.getElementById('infinite-done-btn').style.display = 'block';
   }
 }
 
@@ -1388,9 +1412,9 @@ function resetApp() {
 
   document.getElementById('results-overlay').classList.remove('active');
   document.getElementById('progress').style.display = '';
-  document.getElementById('infinite-counter').style.display = 'none';
-  document.getElementById('infinite-results').style.display = 'none';
-  document.getElementById('infinite-results').innerHTML = '';
+  document.getElementById('infinite-bar').classList.remove('active');
+  document.getElementById('infinite-bar-cards').innerHTML = '';
+  document.getElementById('screen-deck').classList.remove('infinite-active');
   // Remove any appended reset button
   const rp = document.getElementById('right-panel');
   rp.querySelectorAll('.res-btn').forEach(b => b.remove());
