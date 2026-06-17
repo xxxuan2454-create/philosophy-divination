@@ -672,7 +672,7 @@ body {
       </button>
       <button class="spread-btn" onclick="showAllCards()" style="grid-column: 1 / -1; background: transparent; border: 1px dashed rgba(180,148,70,.4); color:#9a7848;">
         <span class="sname" style="font-weight:normal; font-size:14px; letter-spacing:3px; color:#7a6038;">全部卡牌</span>
-        <span class="sdesc">浏览四十六张哲学牌的完整含义</span>
+        <span class="sdesc">浏览四十七张哲学牌的完整含义</span>
       </button>
     </div>
   </div>
@@ -784,6 +784,7 @@ const CARDS = [
   { id:44, name:"沉默",      sub:"Silence",            sym:"·",  kw:"不可言说 · 边界 · 留白 · 虚空",  hint:"语言止步之处，意义才真正开始" },
   { id:45, name:"遗忘",      sub:"Oubli",              sym:"⌀",  kw:"消散 · 解脱 · 尼采 · 生命力",   hint:"遗忘不是失去，而是让生命得以继续" },
   { id:46, name:"超越",      sub:"Transcendance",      sym:"↑",  kw:"超出 · 彼岸 · 无限 · 他者",     hint:"总有某物超出你所能把握的边界" },
+  { id:47, name:"元概念",   sub:"Meta-concept",        sym:"℧",  kw:"自指 · 框架 · 关于概念的概念",  hint:"用来思考思考本身的那个思考" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -852,7 +853,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(46).keys()]);
+  shuffledDeck    = shuffle([...Array(47).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
