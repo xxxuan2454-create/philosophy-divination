@@ -786,7 +786,7 @@ body {
       </button>
       <button class="spread-btn" onclick="startSpread('h')">
         <span class="sname">H 牌阵</span>
-        <span class="sdesc">双柱 · 转化 · 张力</span>
+        <span class="sdesc">主体 · 客体 · 连接</span>
       </button>
       <button class="spread-btn" onclick="startSpread('9')">
         <span class="sname">九宫格</span>
@@ -835,6 +835,8 @@ body {
     </div>
     <div class="max-hint">最多 15 张</div>
     <button class="max-start-btn" onclick="startInfinite()">开始翻牌</button>
+    <br>
+    <button onclick="closeMaxModal()" style="margin-top:12px;background:none;border:none;color:#a08050;font-size:12px;font-family:inherit;cursor:pointer;letter-spacing:1px;">← 返回选牌阵</button>
   </div>
 </div>
 
@@ -961,8 +963,9 @@ const SPREADS = {
   },
   'h': {
     name: 'H 牌阵', count: 7, hasExtra: false, layout: 'h',
-    // areas: a=左上, b=左中, c=左下, e=桥, d=右上, f=右中, g=右下
-    positions: ['基础', '现状', '阻碍', '转化点', '资源', '潜力', '走向'],
+    // Left col = 主体, Right col = 客体, Center = 连接
+    // areas: a=左上, b=左中, c=左下, e=桥(中), d=右上, f=右中, g=右下
+    positions: ['主体·过去', '主体·当下', '主体·走向', '主客之连接', '客体·过去', '客体·当下', '客体·走向'],
     areas: ['a', 'b', 'c', 'e', 'd', 'f', 'g']
   },
   '9': {
@@ -1287,6 +1290,10 @@ function updateMaxDisplay(val) {
 function showMaxModal() {
   document.getElementById('max-modal').classList.add('active');
   updateMaxDisplay(document.getElementById('max-slider').value);
+}
+
+function closeMaxModal() {
+  document.getElementById('max-modal').classList.remove('active');
 }
 
 function startInfinite() {
