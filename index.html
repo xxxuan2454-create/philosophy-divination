@@ -1,0 +1,1160 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>哲学占卜</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+
+body {
+  background: #ede0c8;
+  font-family: 'Georgia', 'STSong', '宋体', serif;
+  min-height: 100vh;
+  user-select: none;
+  overflow-x: hidden;
+}
+
+/* ══════════════════════════════════════
+   SCREEN SYSTEM
+══════════════════════════════════════ */
+.screen {
+  position: fixed; inset: 0;
+  display: none;
+  flex-direction: column;
+}
+.screen.active { display: flex; }
+
+/* ══════════════════════════════════════
+   SCREEN 1 — SPREAD SELECTION
+══════════════════════════════════════ */
+#screen-spread {
+  background: #e8dcc8;
+  align-items: center;
+  justify-content: center;
+  gap: 0;
+}
+
+.spread-box {
+  background: transparent;
+  border: none;
+  padding: 0;
+  text-align: center;
+  width: 520px;
+}
+
+.spread-box h1 {
+  font-size: 42px;
+  color: #2a1800;
+  letter-spacing: 10px;
+  font-weight: normal;
+  margin-bottom: 10px;
+}
+.spread-box .tagline {
+  font-size: 12px;
+  color: #a08050;
+  font-style: italic;
+  letter-spacing: 3px;
+  margin-bottom: 10px;
+}
+
+/* thin decorative line under tagline */
+.spread-divider {
+  width: 60px;
+  height: 1px;
+  background: linear-gradient(to right, transparent, #c8a84b, transparent);
+  margin: 0 auto 36px;
+}
+
+.spread-grid {
+  display: grid;
+  grid-template-columns: 1fr 1fr 1fr;
+  gap: 10px;
+  margin-bottom: 10px;
+}
+
+.spread-btn {
+  background: #fdf6e8;
+  border: 1.5px solid rgba(160,125,55,.5);
+  border-radius: 10px;
+  padding: 18px 10px;
+  cursor: pointer;
+  transition: all 0.22s;
+  font-family: inherit;
+  box-shadow: 0 2px 8px rgba(0,0,0,.10), 0 1px 0 rgba(255,255,255,.8) inset;
+}
+.spread-btn:hover {
+  background: #fff;
+  border-color: #b8922e;
+  transform: translateY(-3px);
+  box-shadow: 0 8px 22px rgba(160,120,40,.22);
+}
+.spread-btn .sname {
+  display: block; font-size: 16px; font-weight: bold; color: #1e1000; letter-spacing: 1px;
+}
+.spread-btn .sdesc {
+  display: block; font-size: 10px; color: #8a6838; margin-top: 6px; line-height: 1.6; letter-spacing: 0.5px;
+}
+
+/* ══════════════════════════════════════
+   SCREEN 2 — CARD DECK
+══════════════════════════════════════ */
+#screen-deck { flex-direction: row; background: #ede0c8; }
+
+/* ══════════════════════════════════════
+   CARD GRID AREA
+══════════════════════════════════════ */
+#grid-area {
+  flex: 1;
+  padding: 18px 14px;
+  display: flex;
+  flex-wrap: wrap;
+  gap: 7px;
+  align-content: flex-start;
+}
+
+/* ══════════════════════════════════════
+   INDIVIDUAL CARD
+══════════════════════════════════════ */
+.card {
+  width: 82px;
+  height: 124px;
+  perspective: 700px;
+  cursor: pointer;
+  flex-shrink: 0;
+  transition: transform 0.2s, opacity 0.2s;
+  position: relative;
+}
+
+/* Shuffle rotation – varied by position */
+.card:nth-child(7n+1) { transform: rotate(-2.1deg); }
+.card:nth-child(7n+2) { transform: rotate(1.4deg); }
+.card:nth-child(7n+3) { transform: rotate(-0.7deg); }
+.card:nth-child(7n+4) { transform: rotate(2.3deg); }
+.card:nth-child(7n+5) { transform: rotate(-1.6deg); }
+.card:nth-child(7n+6) { transform: rotate(0.9deg); }
+.card:nth-child(7n+0) { transform: rotate(-1.1deg); }
+
+.card:hover:not(.disabled):not(.chosen) {
+  transform: rotate(0deg) translateY(-6px) scale(1.05) !important;
+  z-index: 10;
+}
+
+.card.chosen {
+  transform: rotate(0deg) translateY(-12px) scale(1.06) !important;
+  opacity: 0.65;
+  z-index: 5;
+}
+
+.card.chosen::after {
+  content: attr(data-order);
+  position: absolute;
+  top: -8px; right: -8px;
+  background: #8b4513;
+  color: #f5e0a0;
+  width: 20px; height: 20px;
+  border-radius: 50%;
+  font-size: 10px;
+  font-weight: bold;
+  display: flex; align-items: center; justify-content: center;
+  font-family: sans-serif;
+  z-index: 20;
+  box-shadow: 0 2px 6px rgba(0,0,0,0.4);
+}
+
+/* Extra card chosen from deck */
+.card.extra-chosen {
+  transform: rotate(0deg) translateY(-12px) scale(1.06) !important;
+  opacity: 0.65;
+}
+.card.extra-chosen::after {
+  content: '补';
+  background: #5a2880;
+  color: #e8d0ff;
+}
+/* Pulse highlight on cards available for extra pick */
+.card.extra-available {
+  animation: extraPulse 1.2s ease-in-out infinite alternate;
+  cursor: pointer !important;
+}
+@keyframes extraPulse {
+  from { box-shadow: 0 0 0 0 rgba(140,80,200,0); }
+  to   { box-shadow: 0 0 10px 3px rgba(140,80,200,0.45); }
+}
+
+.card.disabled { cursor: default; pointer-events: none; }
+
+.card-inner {
+  width: 100%; height: 100%;
+  position: relative;
+  transform-style: preserve-3d;
+  transition: transform 0.7s cubic-bezier(0.4, 0, 0.2, 1);
+}
+
+.card-back, .card-front {
+  position: absolute; inset: 0;
+  border-radius: 7px;
+  backface-visibility: hidden;
+  -webkit-backface-visibility: hidden;
+}
+
+/* ── Card Back ── */
+.card-back {
+  background:
+    repeating-linear-gradient(45deg,  rgba(55,45,0,.11) 0, rgba(55,45,0,.11) 1px, transparent 0, transparent 9px),
+    repeating-linear-gradient(135deg, rgba(55,45,0,.11) 0, rgba(55,45,0,.11) 1px, transparent 0, transparent 9px),
+    linear-gradient(155deg, #a8b05c 0%, #c8c878 20%, #d8d080 50%, #c0b868 78%, #a0a850 100%);
+  border: 2.5px solid #6a7228;
+  overflow: hidden;
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+}
+.card-back::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(70,60,5,.42);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.card-back::after {
+  content: '';
+  position: absolute; inset: 7px;
+  border: 0.5px solid rgba(70,60,5,.22);
+  border-radius: 2px;
+  pointer-events: none;
+}
+.back-top  { position: absolute; top: 10px;    font-size: 6.5px; letter-spacing: 1px; font-weight: bold; color: rgba(35,28,0,.72); }
+.back-orn  { font-size: 28px; color: rgba(45,38,0,.6); line-height: 1; }
+.back-bot  { position: absolute; bottom: 9px;  font-size: 6.5px; letter-spacing: 1px; font-weight: bold; color: rgba(35,28,0,.72); }
+.back-c    { position: absolute; font-size: 11px; color: rgba(160,28,28,.72); }
+.back-c.tl { top: 5px;    left: 6px;  }
+.back-c.tr { top: 5px;    right: 6px; }
+.back-c.bl { bottom: 5px; left: 6px;  }
+.back-c.br { bottom: 5px; right: 6px; }
+
+/* ── Card Front (in grid, not used directly, but kept for completeness) ── */
+.card-front {
+  background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
+  border: 2.5px solid #8b6914;
+  transform: rotateY(180deg);
+  display: flex; flex-direction: column; align-items: center; justify-content: center;
+  padding: 10px 5px 16px;
+  text-align: center;
+  overflow: hidden;
+}
+.card-front::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(139,105,20,.38);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.cf-num  { position: absolute; top: 6px; left: 7px; font-size: 7.5px; color: #8b6914; }
+.cf-sym  { font-size: 19px; margin-bottom: 3px; }
+.cf-name { font-size: 12px; font-weight: bold; color: #1c0e00; line-height: 1.3; }
+.cf-sub  { font-size: 7px; color: #8b6020; font-style: italic; margin-top: 2px; line-height: 1.4; max-width: 68px; }
+.cf-kw   { font-size: 7.5px; color: #5a4020; margin-top: 4px; line-height: 1.5; }
+.cf-hint { position: absolute; bottom: 5px; font-size: 6.5px; color: #8b6014; font-style: italic; padding: 0 5px; line-height: 1.3; }
+
+/* ══════════════════════════════════════
+   RIGHT PANEL
+══════════════════════════════════════ */
+#right-panel {
+  width: 280px;
+  min-width: 280px;
+  padding: 22px 18px;
+  display: flex;
+  flex-direction: column;
+  gap: 14px;
+  border-left: 1px solid #c8a84b;
+  background: rgba(238,220,185,.45);
+}
+
+#change-btn {
+  align-self: flex-end;
+  background: #3e2208;
+  color: #f5e8c8;
+  border: none;
+  border-radius: 6px;
+  padding: 9px 16px;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: background 0.2s;
+}
+#change-btn:hover { background: #6a3810; }
+
+#instruction {
+  font-size: 22px;
+  font-weight: bold;
+  color: #1e1000;
+  line-height: 1.55;
+}
+#needed-count {
+  font-size: 52px;
+  color: #8b3c0a;
+  display: block;
+  line-height: 1;
+}
+#progress { font-size: 13px; color: #7a5c2a; min-height: 20px; }
+
+#reveal-btn {
+  display: none;
+  background: linear-gradient(160deg, #9e4510, #7a2e05);
+  color: #f8edd5;
+  border: none;
+  border-radius: 8px;
+  padding: 13px 20px;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 2px;
+  transition: all 0.2s;
+}
+#reveal-btn:hover { transform: translateY(-2px); box-shadow: 0 5px 14px rgba(0,0,0,.3); }
+
+/* ══════════════════════════════════════
+   RESULTS OVERLAY
+══════════════════════════════════════ */
+#results-overlay {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(20, 10, 0, 0.88);
+  z-index: 200;
+  overflow-y: auto;
+  padding: 36px 20px 50px;
+  flex-direction: column;
+  align-items: center;
+}
+#results-overlay.active { display: flex; }
+
+.res-title {
+  color: #f0d890;
+  font-size: 11px;
+  letter-spacing: 6px;
+  text-transform: uppercase;
+  margin-bottom: 4px;
+}
+.res-spread-name {
+  color: #c8a040;
+  font-size: 22px;
+  letter-spacing: 3px;
+  margin-bottom: 6px;
+}
+.ornament { color: #c8a040; font-size: 16px; letter-spacing: 10px; margin: 10px 0 24px; }
+
+/* ── Result card (large) ── */
+.result-card-wrap {
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  gap: 6px;
+  cursor: pointer;
+}
+
+.result-card-wrap:hover .result-card { box-shadow: 0 6px 24px rgba(200,168,75,.5); }
+
+.result-card {
+  width: 120px;
+  height: 210px;
+  background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
+  border: 2.5px solid #8b6914;
+  border-radius: 8px;
+  padding: 12px 8px 10px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 4px 18px rgba(0,0,0,.45);
+  animation: revealCard 0.5s ease both;
+  overflow: hidden;
+  transition: box-shadow 0.2s;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+}
+.result-card::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(139,105,20,.3);
+  border-radius: 4px;
+  pointer-events: none;
+}
+
+@keyframes revealCard {
+  from { opacity: 0; transform: rotateY(90deg) scale(0.85); }
+  to   { opacity: 1; transform: rotateY(0)     scale(1);    }
+}
+
+/* Reversed card – rotate everything inside 180deg */
+.result-card.reversed .card-content-inner {
+  transform: rotate(180deg);
+}
+.result-card.reversed {
+  border-color: #6a4090;
+  box-shadow: 0 4px 18px rgba(100,60,140,.4);
+}
+
+.card-content-inner {
+  width: 100%;
+  flex: 1;
+  display: flex;
+  flex-direction: column;
+  align-items: center;
+  justify-content: space-between;
+  transition: transform 0s;
+}
+
+.result-card.reversed .card-content-inner {
+  /* keep full size when rotated */
+  width: 100%;
+  height: 100%;
+}
+
+.rc-pos {
+  font-size: 8.5px;
+  color: #8b6914;
+  letter-spacing: 1px;
+  margin-bottom: 7px;
+  font-family: sans-serif;
+}
+.rc-orientation {
+  font-size: 7.5px;
+  font-family: sans-serif;
+  margin-bottom: 6px;
+  font-weight: bold;
+}
+.rc-orientation.upright  { color: #4a7a1a; }
+.rc-orientation.reversed { color: #6a4090; }
+
+.rc-sym  { font-size: 26px; margin-bottom: 5px; }
+.rc-name { font-size: 15px; font-weight: bold; color: #1c0e00; line-height: 1.3; }
+.rc-sub  { font-size: 8px; color: #8b6020; font-style: italic; margin-top: 3px; line-height: 1.4; }
+.rc-kw   { font-size: 8px; color: #5a4020; margin-top: 6px; line-height: 1.6; }
+.rc-hint {
+  font-size: 8px; color: #6b4810; font-style: italic;
+  margin-top: 6px; padding-top: 6px;
+  border-top: 1px solid rgba(139,105,20,.28);
+  line-height: 1.5;
+}
+
+.pos-label {
+  font-size: 10px;
+  color: #b09050;
+  letter-spacing: 1px;
+  font-family: sans-serif;
+  text-align: center;
+}
+
+/* ══════════════════════════════════════
+   SCREEN 3 — ALL CARDS BROWSER
+══════════════════════════════════════ */
+#screen-cards {
+  background: #ede0c8;
+  overflow-y: auto;
+}
+
+.cards-browser-header {
+  display: flex;
+  align-items: center;
+  gap: 16px;
+  padding: 22px 32px 16px;
+  border-bottom: 1px solid #c8a84b;
+  background: rgba(240,225,190,.7);
+  position: sticky;
+  top: 0;
+  z-index: 10;
+}
+
+.cards-browser-header h2 {
+  font-size: 22px;
+  color: #2c1400;
+  letter-spacing: 4px;
+  flex: 1;
+  text-align: center;
+}
+
+.back-btn {
+  background: #3e2208;
+  color: #f5e8c8;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 1px;
+  transition: background 0.2s;
+  white-space: nowrap;
+}
+.back-btn:hover { background: #6a3810; }
+
+#cards-browser-grid {
+  display: flex;
+  flex-wrap: wrap;
+  gap: 16px;
+  padding: 28px 32px 40px;
+  justify-content: center;
+}
+
+/* Browser card — front face always visible */
+.browser-card {
+  width: 110px;
+  background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
+  border: 2.5px solid #8b6914;
+  border-radius: 8px;
+  padding: 14px 8px 10px;
+  text-align: center;
+  position: relative;
+  cursor: pointer;
+  transition: transform 0.18s, box-shadow 0.18s;
+  box-shadow: 0 2px 8px rgba(0,0,0,.15);
+}
+.browser-card::before {
+  content: '';
+  position: absolute; inset: 4px;
+  border: 1px solid rgba(139,105,20,.32);
+  border-radius: 4px;
+  pointer-events: none;
+}
+.browser-card:hover {
+  transform: translateY(-5px) scale(1.04);
+  box-shadow: 0 8px 22px rgba(0,0,0,.28);
+}
+.bc-num  { position: absolute; top: 6px; left: 8px; font-size: 8px; color: #8b6914; }
+.bc-sym  { font-size: 22px; margin-bottom: 5px; }
+.bc-name { font-size: 13px; font-weight: bold; color: #1c0e00; line-height: 1.3; }
+.bc-sub  { font-size: 7.5px; color: #8b6020; font-style: italic; margin-top: 3px; line-height: 1.4; }
+.bc-kw   { font-size: 7.5px; color: #5a4020; margin-top: 5px; line-height: 1.6; }
+.bc-hint { font-size: 7px; color: #6b4810; font-style: italic; margin-top: 5px; padding-top: 5px; border-top: 1px solid rgba(139,105,20,.25); line-height: 1.4; }
+
+/* ── Spread layout containers ── */
+.spread-linear { display: flex; gap: 14px; flex-wrap: wrap; justify-content: center; }
+
+.spread-cross {
+  display: grid;
+  grid-template-areas: ". top ." "lft ctr rgt" ". bot .";
+  grid-template-columns: 134px 134px 134px;
+  grid-template-rows: auto auto auto;
+  gap: 12px;
+}
+
+.spread-h {
+  display: grid;
+  grid-template-areas: "a . d" "b e f" "c . g";
+  grid-template-columns: 134px 134px 134px;
+  grid-template-rows: auto auto auto;
+  gap: 12px;
+}
+
+.spread-9 {
+  display: grid;
+  grid-template-columns: repeat(3, 134px);
+  gap: 12px;
+}
+
+/* Results actions */
+.results-actions {
+  margin-top: 28px;
+  display: flex; gap: 12px; flex-wrap: wrap; justify-content: center;
+}
+.res-btn {
+  background: linear-gradient(160deg, #c8a84b, #a07828);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  padding: 10px 22px;
+  font-size: 14px;
+  font-family: inherit;
+  cursor: pointer;
+  color: #1c0e00;
+  letter-spacing: 1px;
+  transition: all 0.2s;
+}
+.res-btn:hover { background: linear-gradient(160deg, #a07828, #7a5c18); color: #f8edd5; }
+.res-btn.ghost {
+  background: transparent;
+  color: #c8a040;
+  border-color: #6a5020;
+}
+.res-btn.ghost:hover { background: rgba(200,168,75,.18); }
+
+/* Extra card section */
+.extra-section { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
+.extra-label   { color: #c8a040; font-size: 11px; letter-spacing: 3px; font-family: sans-serif; }
+
+/* ══════════════════════════════════════
+   CARD DETAIL MODAL
+══════════════════════════════════════ */
+#card-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,5,0,.92);
+  z-index: 400;
+  align-items: center; justify-content: center;
+  flex-direction: column;
+  gap: 20px;
+}
+#card-modal.active { display: flex; }
+
+.modal-card {
+  width: 220px;
+  background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
+  border: 3px solid #8b6914;
+  border-radius: 14px;
+  padding: 28px 18px 20px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 12px 50px rgba(0,0,0,.7);
+  animation: modalPop 0.3s cubic-bezier(0.34, 1.56, 0.64, 1) both;
+}
+.modal-card::before {
+  content: '';
+  position: absolute; inset: 7px;
+  border: 1.5px solid rgba(139,105,20,.35);
+  border-radius: 10px;
+  pointer-events: none;
+}
+
+@keyframes modalPop {
+  from { opacity: 0; transform: scale(0.7); }
+  to   { opacity: 1; transform: scale(1);   }
+}
+
+.modal-pos       { font-size: 11px; color: #8b6914; letter-spacing: 2px; margin-bottom: 10px; font-family: sans-serif; }
+.modal-orient    { font-size: 10px; font-weight: bold; margin-bottom: 12px; font-family: sans-serif; }
+.modal-orient.upright  { color: #4a7a1a; }
+.modal-orient.reversed { color: #6a4090; }
+.modal-sym       { font-size: 52px; margin-bottom: 10px; }
+.modal-name      { font-size: 28px; font-weight: bold; color: #1c0e00; line-height: 1.2; }
+.modal-sub       { font-size: 12px; color: #8b6020; font-style: italic; margin-top: 5px; line-height: 1.4; }
+.modal-divider   { width: 60px; height: 1px; background: rgba(139,105,20,.4); margin: 14px auto; }
+.modal-kw        { font-size: 13px; color: #5a4020; line-height: 1.8; }
+.modal-hint      { font-size: 11px; color: #6b4810; font-style: italic; margin-top: 12px; line-height: 1.6; }
+
+.modal-close-hint {
+  color: #7a6040;
+  font-size: 12px;
+  font-family: sans-serif;
+  letter-spacing: 1px;
+}
+</style>
+</head>
+<body>
+
+<!-- ═══════════════════ SCREEN 1: SPREAD SELECTION ═══════════════════ -->
+<div id="screen-spread" class="screen active">
+  <div class="spread-box">
+    <h1>哲学占卜</h1>
+    <p class="tagline">以哲学之眼，观命运之流</p>
+    <div class="spread-divider"></div>
+    <div class="spread-grid">
+      <button class="spread-btn" onclick="startSpread('2')">
+        <span class="sname">双牌</span>
+        <span class="sdesc">当下 · 潜流</span>
+      </button>
+      <button class="spread-btn" onclick="startSpread('3')">
+        <span class="sname">三牌</span>
+        <span class="sdesc">过去 · 现在 · 未来</span>
+      </button>
+      <button class="spread-btn" onclick="startSpread('5')">
+        <span class="sname">五牌</span>
+        <span class="sdesc">五重面向</span>
+      </button>
+      <button class="spread-btn" onclick="startSpread('cross')">
+        <span class="sname">十字牌阵</span>
+        <span class="sdesc">核心 · 四方向度</span>
+      </button>
+      <button class="spread-btn" onclick="startSpread('h')">
+        <span class="sname">H 牌阵</span>
+        <span class="sdesc">双柱 · 转化 · 张力</span>
+      </button>
+      <button class="spread-btn" onclick="startSpread('9')">
+        <span class="sname">九宫格</span>
+        <span class="sdesc">九维 · 全景观照</span>
+      </button>
+      <button class="spread-btn" onclick="showAllCards()" style="grid-column: 1 / -1; background: transparent; border: 1px dashed rgba(180,148,70,.4); color:#9a7848;">
+        <span class="sname" style="font-weight:normal; font-size:14px; letter-spacing:3px; color:#7a6038;">全部卡牌</span>
+        <span class="sdesc">浏览四十一张哲学牌的完整含义</span>
+      </button>
+    </div>
+  </div>
+</div>
+
+<!-- ═══════════════════ SCREEN 3: ALL CARDS BROWSER ═══════════════════ -->
+<div id="screen-cards" class="screen">
+  <div class="cards-browser-header">
+    <button class="back-btn" onclick="goToSpreadSelect()">← 返回</button>
+    <h2>全部卡牌</h2>
+    <div style="width:64px"></div>
+  </div>
+  <div id="cards-browser-grid"></div>
+</div>
+
+<!-- ═══════════════════ SCREEN 2: CARD DECK ═══════════════════ -->
+<div id="screen-deck" class="screen">
+  <div id="grid-area"></div>
+  <div id="right-panel">
+    <button id="change-btn" onclick="goToSpreadSelect()">更改牌阵</button>
+    <div id="instruction">
+      请依次选择<br>
+      <span id="needed-count" style="font-size:52px;color:#8b3c0a;display:block;line-height:1">3</span> 张牌
+    </div>
+    <div id="progress"></div>
+    <button id="reveal-btn" onclick="showResults()">揭示占卜结果</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ RESULTS OVERLAY ═══════════════════ -->
+<div id="results-overlay">
+  <div class="res-title">✦ 哲学之镜 ✦</div>
+  <div class="res-spread-name" id="res-spread-name"></div>
+  <div class="ornament">❧ ✦ ❧</div>
+  <div id="spread-display"></div>
+  <div id="extra-section" style="display:none">
+    <div class="ornament" style="margin-top:20px">· · ·</div>
+    <div id="extra-result"></div>
+  </div>
+  <div class="results-actions">
+    <button class="res-btn" id="extra-btn" onclick="drawExtra()" style="display:none">补抽一张</button>
+    <button class="res-btn ghost" onclick="resetApp()">重新占卜</button>
+  </div>
+</div>
+
+<!-- ═══════════════════ CARD DETAIL MODAL ═══════════════════ -->
+<div id="card-modal" onclick="closeModal()">
+  <div class="modal-card" onclick="event.stopPropagation()">
+    <div class="modal-pos"    id="m-pos"></div>
+    <div class="modal-orient" id="m-orient"></div>
+    <div class="modal-sym"    id="m-sym"></div>
+    <div class="modal-name"   id="m-name"></div>
+    <div class="modal-sub"    id="m-sub"></div>
+    <div class="modal-divider"></div>
+    <div class="modal-kw"     id="m-kw"></div>
+    <div class="modal-hint"   id="m-hint"></div>
+  </div>
+  <div class="modal-close-hint">点击任意处关闭</div>
+</div>
+
+<script>
+/* ═══════════════════════════════════════════════════════
+   CARD DATA  (39 philosophical concepts)
+═══════════════════════════════════════════════════════ */
+const CARDS = [
+  { id:1,  name:"延异",       sub:"Différance",      sym:"∂",  kw:"推迟 · 差异 · 踪迹",       hint:"意义永远在路上，从不抵达" },
+  { id:2,  name:"递归",       sub:"",                sym:"↺",  kw:"自我指涉 · 嵌套 · 无穷",   hint:"在自身中一再发现自身" },
+  { id:3,  name:"此在/Be(ing)", sub:"Dasein",          sym:"◉",  kw:"此在 · 存在 · 临在",       hint:"存在先于本质" },
+  { id:4,  name:"符号",       sub:"Signe",            sym:"§",  kw:"能指 · 所指 · 意指",       hint:"符号指向它自身的缺席" },
+  { id:5,  name:"分裂",       sub:"Spaltung",         sym:"⊕",  kw:"断裂 · 割裂 · 他者",       hint:"完整从未存在" },
+  { id:6,  name:"精神",       sub:"Geist",            sym:"Ψ",  kw:"意识 · 绝对 · 扬弃",       hint:"精神在自我异化中认识自身" },
+  { id:7,  name:"无中生有",   sub:"ex nihilo",        sym:"☆",  kw:"创造 · 虚无 · 涌现",       hint:"从空无中生出一切" },
+  { id:8,  name:"辨证/综合",  sub:"Dialectic",        sym:"↻",  kw:"正题 · 反题 · 合题",       hint:"矛盾是运动的原动力" },
+  { id:9,  name:"否定/拒绝",  sub:"Negation",         sym:"¬",  kw:"否认 · 拒斥 · 压抑",       hint:"拒绝本身即是一种回应" },
+  { id:10, name:"自我",       sub:"Ego / Self",       sym:"◐",  kw:"主体 · 认同 · 镜像",       hint:"自我是他者凝视的产物" },
+  { id:11, name:"因果逻辑",   sub:"Causality",        sym:"→",  kw:"原因 · 结果 · 必然",       hint:"每个结果都藏着隐秘的原因" },
+  { id:12, name:"同构",       sub:"Isomorphism",      sym:"≅",  kw:"映射 · 对应 · 结构",       hint:"不同事物共享同一深层形式" },
+  { id:13, name:"拓扑",       sub:"Topology",         sym:"∿",  kw:"连续 · 变形 · 不变量",     hint:"形变之中寻找不变的本质" },
+  { id:14, name:"肉质",       sub:"Chair",            sym:"♥",  kw:"身体 · 感知 · 具身",       hint:"思想栖居于肉身之中" },
+  { id:15, name:"场域/矩阵",  sub:"Champ / Field",    sym:"⊞",  kw:"力场 · 位置 · 关系网络",   hint:"位置决定意义" },
+  { id:16, name:"畸变/奇点",  sub:"Singularity",      sym:"✸",  kw:"异常 · 临界 · 突变",       hint:"规则在此处失效" },
+  { id:17, name:"事件",       sub:"Événement",        sym:"⚡", kw:"发生 · 涌现 · 断裂",       hint:"事件打破既有的秩序" },
+  { id:18, name:"被动",       sub:"Passivity",        sym:"☾",  kw:"承受 · 接纳 · 他性",       hint:"在被动中开放于他者" },
+  { id:19, name:"反身",       sub:"Reflexivity",      sym:"↩",  kw:"自指 · 折返 · 凝视",       hint:"当目光转向观察者自身" },
+  { id:20, name:"徒劳",       sub:"Futility",         sym:"∅",  kw:"无用 · 枉然 · 西西弗",     hint:"徒劳本身即是意义" },
+  { id:21, name:"循环/反复",  sub:"Eternal Return",   sym:"⊙",  kw:"永恒回归 · 重复 · 轮回",   hint:"同一件事以不同面目回来" },
+  { id:22, name:"共生/依赖",  sub:"Symbiosis",        sym:"⚭",  kw:"互存 · 寄生 · 纠缠",       hint:"边界在共存中消融" },
+  { id:23, name:"回溯",       sub:"Après-coup",       sym:"◁",  kw:"后见 · 重构 · 记忆",       hint:"过去从现在的眼光中被重写" },
+  { id:24, name:"缺失",       sub:"Manque",           sym:"□",  kw:"空洞 · 欠缺 · 匮乏",       hint:"欲望以缺失为食" },
+  { id:25, name:"献祭",       sub:"Sacrifice",        sym:"△",  kw:"牺牲 · 奉献 · 交换",       hint:"失去什么以换取什么" },
+  { id:26, name:"极限/限制",  sub:"Limite",           sym:"⊂",  kw:"边界 · 约束 · 有限性",     hint:"极限定义了可能性的形状" },
+  { id:27, name:"中心",       sub:"Centre",           sym:"✙",  kw:"核心 · 缺席的在场 · 支点", hint:"中心是组织结构的幻象" },
+  { id:28, name:"悖论",       sub:"Paradox",          sym:"⊗",  kw:"矛盾 · 自毁 · 张力",       hint:"两个真理在此相撞" },
+  { id:29, name:"死亡",       sub:"Mort / Tod",       sym:"✝",  kw:"终结 · 有限性 · 向死而生", hint:"死亡使生命成为可能" },
+  { id:30, name:"道德/政治",  sub:"Ethics / Polis",   sym:"⚖",  kw:"善 · 义务 · 权力",         hint:"伦理从不在真空中存在" },
+  { id:31, name:"时间/空间",  sub:"Temporality",      sym:"⌛", kw:"绵延 · 当下 · 延伸",       hint:"时空是存在展开的舞台" },
+  { id:32, name:"灾异/疯狂",  sub:"Folie",            sym:"☠",  kw:"创伤 · 无序 · 他者性",     hint:"疯狂是理性划定的他者" },
+  { id:33, name:"神/空",      sub:"Dieu / Śūnya",     sym:"☯",  kw:"超越 · 空性 · 神圣",       hint:"神在其缺席中最为在场" },
+  { id:34, name:"折叠/隐藏",  sub:"Pli / Latence",    sym:"◫",  kw:"潜在 · 皱褶 · 遮蔽",       hint:"每个显现都包裹着隐藏" },
+  { id:35, name:"污染/腐蚀",  sub:"Contamination",    sym:"☣",  kw:"侵染 · 越界 · 他者化",     hint:"纯粹从未存在" },
+  { id:36, name:"意义",       sub:"Sens / Meaning",   sym:"◈",  kw:"意指 · 价值 · 诠释",       hint:"意义是被给予的，也是被夺取的" },
+  { id:37, name:"力比多之流", sub:"flux of libido",   sym:"≋",  kw:"欲力 · 流动 · 投注",       hint:"欲望流经一切，无处不在" },
+  { id:38, name:"视点/选择",  sub:"Perspective",      sym:"◎",  kw:"透视 · 决断 · 诠释框架",   hint:"你从何处看，决定你看见什么" },
+  { id:39, name:"无限",       sub:"Infini / ∞",       sym:"∞",  kw:"无穷 · 超越 · 绝对",       hint:"有限之物凝视无限时的眩晕" },
+  { id:40, name:"主客之隔",  sub:"Subject / Object",  sym:"‖",  kw:"主体 · 客体 · 认识论 · 疏离",  hint:"认识者与被认识者之间那道永恒的裂缝" },
+  { id:41, name:"可能性",    sub:"Possibilité",        sym:"◇",  kw:"潜能 · 虚拟 · 尚未 · 开放",   hint:"尚未发生的，比已经发生的更真实" },
+];
+
+/* ═══════════════════════════════════════════════════════
+   SPREAD CONFIGS
+═══════════════════════════════════════════════════════ */
+const SPREADS = {
+  '2': {
+    name: '双牌牌阵', count: 2, hasExtra: true, layout: 'linear',
+    positions: ['当下', '潜流']
+  },
+  '3': {
+    name: '三牌牌阵', count: 3, hasExtra: true, layout: 'linear',
+    positions: ['过去', '现在', '未来']
+  },
+  '5': {
+    name: '五牌牌阵', count: 5, hasExtra: true, layout: 'linear',
+    positions: ['根基', '阻力', '核心', '资源', '走向']
+  },
+  'cross': {
+    name: '十字牌阵', count: 5, hasExtra: false, layout: 'cross',
+    // order: center, top, bottom, left, right
+    positions: ['核心', '意识', '潜意识', '过去', '未来'],
+    areas: ['ctr', 'top', 'bot', 'lft', 'rgt']
+  },
+  'h': {
+    name: 'H 牌阵', count: 7, hasExtra: false, layout: 'h',
+    // areas: a=左上, b=左中, c=左下, e=桥, d=右上, f=右中, g=右下
+    positions: ['基础', '现状', '阻碍', '转化点', '资源', '潜力', '走向'],
+    areas: ['a', 'b', 'c', 'e', 'd', 'f', 'g']
+  },
+  '9': {
+    name: '九宫格牌阵', count: 9, hasExtra: false, layout: '9',
+    positions: ['根源', '过去', '阻力', '内在', '核心', '外在', '资源', '未来', '走向']
+  }
+};
+
+/* ═══════════════════════════════════════════════════════
+   STATE
+═══════════════════════════════════════════════════════ */
+let currentSpread    = null;
+let shuffledDeck     = [];   // array of card indices 0-38, shuffled
+let selectedOrder    = [];   // card indices in selection order
+let orientations     = [];   // true=upright, false=reversed per selected card
+let extraCardIdx     = null;
+let extraOrient      = true;
+let phase            = 'idle';
+let waitingForExtra  = false;
+
+function shuffle(arr) {
+  const a = [...arr];
+  for (let i = a.length - 1; i > 0; i--) {
+    const j = Math.floor(Math.random() * (i + 1));
+    [a[i], a[j]] = [a[j], a[i]];
+  }
+  return a;
+}
+
+/* ═══════════════════════════════════════════════════════
+   INIT / SPREAD START
+═══════════════════════════════════════════════════════ */
+function startSpread(type) {
+  currentSpread   = SPREADS[type];
+  selectedOrder   = [];
+  orientations    = [];
+  extraCardIdx    = null;
+  extraOrient     = true;
+  phase           = 'drawing';
+  waitingForExtra = false;
+  shuffledDeck    = shuffle([...Array(41).keys()]);
+
+  // Switch screens
+  document.getElementById('screen-spread').classList.remove('active');
+  document.getElementById('screen-deck').classList.add('active');
+  document.getElementById('results-overlay').classList.remove('active');
+
+  document.getElementById('instruction').innerHTML =
+    `请依次选择<br><span style="font-size:52px;color:#8b3c0a;display:block;line-height:1">${currentSpread.count}</span> 张牌`;
+  document.getElementById('progress').textContent = `已选 0 / ${currentSpread.count}`;
+  document.getElementById('reveal-btn').style.display = 'none';
+
+  renderGrid();
+}
+
+/* ═══════════════════════════════════════════════════════
+   RENDER CARD GRID
+═══════════════════════════════════════════════════════ */
+function renderGrid() {
+  const grid = document.getElementById('grid-area');
+  grid.innerHTML = '';
+
+  shuffledDeck.forEach(cardIdx => {
+    const el = document.createElement('div');
+    el.className = 'card';
+    el.dataset.cardIdx = cardIdx;
+    el.innerHTML = `
+      <div class="card-inner">
+        <div class="card-back">
+          <span class="back-c tl">✿</span>
+          <span class="back-c tr">✿</span>
+          <span class="back-c bl">✿</span>
+          <span class="back-c br">✿</span>
+          <span class="back-top">哲　学</span>
+          <span class="back-orn">❋</span>
+          <span class="back-bot">占　卜</span>
+        </div>
+        <div class="card-front">
+          <span class="cf-num">${CARDS[cardIdx].id}</span>
+          <span class="cf-sym">${CARDS[cardIdx].sym}</span>
+          <div class="cf-name">${CARDS[cardIdx].name}</div>
+          ${CARDS[cardIdx].sub ? `<div class="cf-sub">${CARDS[cardIdx].sub}</div>` : ''}
+          <div class="cf-kw">${CARDS[cardIdx].kw}</div>
+          <div class="cf-hint">${CARDS[cardIdx].hint}</div>
+        </div>
+      </div>`;
+    el.addEventListener('click', () => onCardClick(el, cardIdx));
+    grid.appendChild(el);
+  });
+}
+
+function onCardClick(el, cardIdx) {
+  // Route to extra-card pick if waiting
+  if (waitingForExtra) {
+    if (!el.classList.contains('chosen') && !el.classList.contains('extra-chosen')) {
+      onExtraCardClick(el, cardIdx);
+    }
+    return;
+  }
+  if (phase !== 'drawing') return;
+  if (el.classList.contains('chosen') || el.classList.contains('disabled')) return;
+  if (selectedOrder.length >= currentSpread.count) return;
+
+  selectedOrder.push(cardIdx);
+  const order = selectedOrder.length;
+  el.classList.add('chosen');
+  el.dataset.order = order;
+
+  const done  = selectedOrder.length;
+  const total = currentSpread.count;
+  document.getElementById('progress').textContent = `已选 ${done} / ${total}`;
+
+  if (done === total) {
+    document.getElementById('reveal-btn').style.display = 'block';
+    document.getElementById('instruction').innerHTML =
+      `<span style="font-size:20px;color:#1e1000">选牌完成</span><br>
+       <span style="font-size:13px;color:#7a5c2a;line-height:2">点击下方按钮<br>揭示占卜结果</span>`;
+    document.querySelectorAll('.card:not(.chosen)').forEach(c => c.classList.add('disabled'));
+  }
+}
+
+/* ═══════════════════════════════════════════════════════
+   SHOW RESULTS
+═══════════════════════════════════════════════════════ */
+function showResults() {
+  phase = 'revealed';
+
+  // Assign random orientations for each selected card
+  orientations = selectedOrder.map(() => Math.random() > 0.35); // ~65% upright
+
+  document.getElementById('results-overlay').classList.add('active');
+  document.getElementById('res-spread-name').textContent = currentSpread.name;
+
+  const display = document.getElementById('spread-display');
+  display.innerHTML = '';
+
+  buildSpreadDisplay(display);
+
+  document.getElementById('extra-btn').style.display = currentSpread.hasExtra ? 'block' : 'none';
+  document.getElementById('extra-section').style.display = 'none';
+  document.getElementById('extra-result').innerHTML = '';
+}
+
+function buildSpreadDisplay(container) {
+  const sp = currentSpread;
+
+  if (sp.layout === 'linear') {
+    const row = document.createElement('div');
+    row.className = 'spread-linear';
+    selectedOrder.forEach((cardIdx, i) => {
+      row.appendChild(makeResultWrap(cardIdx, sp.positions[i], orientations[i], i));
+    });
+    container.appendChild(row);
+
+  } else if (sp.layout === 'cross') {
+    const grid = document.createElement('div');
+    grid.className = 'spread-cross';
+    // positions order: center(0), top(1), bottom(2), left(3), right(4)
+    // areas:           ctr,        top,    bot,        lft,     rgt
+    selectedOrder.forEach((cardIdx, i) => {
+      const wrap = makeResultWrap(cardIdx, sp.positions[i], orientations[i], i);
+      wrap.style.gridArea = sp.areas[i];
+      grid.appendChild(wrap);
+    });
+    container.appendChild(grid);
+
+  } else if (sp.layout === 'h') {
+    const grid = document.createElement('div');
+    grid.className = 'spread-h';
+    selectedOrder.forEach((cardIdx, i) => {
+      const wrap = makeResultWrap(cardIdx, sp.positions[i], orientations[i], i);
+      wrap.style.gridArea = sp.areas[i];
+      grid.appendChild(wrap);
+    });
+    container.appendChild(grid);
+
+  } else if (sp.layout === '9') {
+    const grid = document.createElement('div');
+    grid.className = 'spread-9';
+    selectedOrder.forEach((cardIdx, i) => {
+      grid.appendChild(makeResultWrap(cardIdx, sp.positions[i], orientations[i], i));
+    });
+    container.appendChild(grid);
+  }
+}
+
+/* ── Build one result card wrapper ── */
+function makeResultWrap(cardIdx, position, isUpright, animOrder) {
+  const card = CARDS[cardIdx];
+  const wrap = document.createElement('div');
+  wrap.className = 'result-card-wrap';
+  wrap.title = '点击查看大图';
+
+  const rc = document.createElement('div');
+  rc.className = 'result-card' + (isUpright ? '' : ' reversed');
+  rc.style.animationDelay = `${animOrder * 0.13}s`;
+
+  rc.innerHTML = `
+    <div class="card-content-inner">
+      <div class="rc-pos">${position}</div>
+      <div class="rc-orientation ${isUpright ? 'upright' : 'reversed'}">${isUpright ? '正位' : '逆位'}</div>
+      <div class="rc-sym">${card.sym}</div>
+      <div class="rc-name">${card.name}</div>
+      ${card.sub ? `<div class="rc-sub">${card.sub}</div>` : ''}
+      <div class="rc-kw">${card.kw}</div>
+      <div class="rc-hint">${card.hint}</div>
+    </div>`;
+
+  wrap.appendChild(rc);
+
+  const label = document.createElement('div');
+  label.className = 'pos-label';
+  label.textContent = position;
+  wrap.appendChild(label);
+
+  wrap.addEventListener('click', () => openModal(cardIdx, position, isUpright));
+  return wrap;
+}
+
+/* ═══════════════════════════════════════════════════════
+   EXTRA CARD  (manual pick from remaining deck)
+═══════════════════════════════════════════════════════ */
+function drawExtra() {
+  waitingForExtra = true;
+
+  // Hide results, let user pick from deck
+  document.getElementById('results-overlay').classList.remove('active');
+  document.getElementById('extra-btn').style.display = 'none';
+
+  document.getElementById('instruction').innerHTML =
+    `请选择<br><span style="font-size:52px;color:#5a2880;display:block;line-height:1">补牌</span>`;
+  document.getElementById('progress').textContent = '从剩余牌中选择一张';
+  document.getElementById('reveal-btn').style.display = 'none';
+
+  // Enable remaining unchosen cards
+  document.querySelectorAll('.card:not(.chosen):not(.extra-chosen)').forEach(c => {
+    c.classList.remove('disabled');
+    c.classList.add('extra-available');
+  });
+}
+
+function onExtraCardClick(el, cardIdx) {
+  if (!waitingForExtra) return;
+
+  waitingForExtra  = false;
+  extraCardIdx     = cardIdx;
+  extraOrient      = Math.random() > 0.35;
+
+  // Style the picked card
+  el.classList.remove('extra-available');
+  el.classList.add('extra-chosen');
+  el.dataset.order = '补';
+
+  // Lock all other cards
+  document.querySelectorAll('.card').forEach(c => {
+    c.classList.remove('extra-available');
+    if (!c.classList.contains('chosen') && !c.classList.contains('extra-chosen')) {
+      c.classList.add('disabled');
+    }
+  });
+
+  // Re-show results with extra card
+  document.getElementById('results-overlay').classList.add('active');
+
+  const section = document.getElementById('extra-section');
+  section.style.display = 'flex';
+  section.style.flexDirection = 'column';
+  section.style.alignItems = 'center';
+
+  const result = document.getElementById('extra-result');
+  result.innerHTML = '';
+  const label = document.createElement('div');
+  label.className = 'extra-label';
+  label.textContent = '◆  额外洞见  ◆';
+  result.appendChild(label);
+  result.appendChild(makeResultWrap(extraCardIdx, '额外洞见', extraOrient, 0));
+}
+
+/* ═══════════════════════════════════════════════════════
+   CARD DETAIL MODAL
+═══════════════════════════════════════════════════════ */
+function openModal(cardIdx, position, isUpright) {
+  const card = CARDS[cardIdx];
+  document.getElementById('m-pos').textContent    = position;
+  document.getElementById('m-orient').textContent = isUpright ? '✦ 正位 ✦' : '✦ 逆位 ✦';
+  document.getElementById('m-orient').className   = 'modal-orient ' + (isUpright ? 'upright' : 'reversed');
+  document.getElementById('m-sym').textContent    = card.sym;
+  document.getElementById('m-name').textContent   = card.name;
+  document.getElementById('m-sub').textContent    = card.sub || '';
+  document.getElementById('m-sub').style.display  = card.sub ? 'block' : 'none';
+  document.getElementById('m-kw').textContent     = card.kw;
+  document.getElementById('m-hint').textContent   = card.hint;
+  document.getElementById('card-modal').classList.add('active');
+}
+
+function closeModal() {
+  document.getElementById('card-modal').classList.remove('active');
+}
+
+document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ═══════════════════════════════════════════════════════
+   NAVIGATION
+═══════════════════════════════════════════════════════ */
+function goToSpreadSelect() {
+  document.getElementById('results-overlay').classList.remove('active');
+  document.getElementById('screen-deck').classList.remove('active');
+  document.getElementById('screen-cards').classList.remove('active');
+  document.getElementById('screen-spread').classList.add('active');
+  closeModal();
+}
+
+function showAllCards() {
+  document.getElementById('screen-spread').classList.remove('active');
+  document.getElementById('screen-cards').classList.add('active');
+
+  const grid = document.getElementById('cards-browser-grid');
+  if (grid.children.length > 0) return; // already built
+
+  CARDS.forEach(card => {
+    const el = document.createElement('div');
+    el.className = 'browser-card';
+    el.innerHTML = `
+      <span class="bc-num">${card.id}</span>
+      <div class="bc-sym">${card.sym}</div>
+      <div class="bc-name">${card.name}</div>
+      ${card.sub ? `<div class="bc-sub">${card.sub}</div>` : ''}
+      <div class="bc-kw">${card.kw}</div>
+      <div class="bc-hint">${card.hint}</div>`;
+    el.addEventListener('click', () => openModal(card.id - 1, card.name, true));
+    grid.appendChild(el);
+  });
+}
+
+function resetApp() {
+  waitingForExtra = false;
+  selectedOrder   = [];
+  orientations    = [];
+  extraCardIdx    = null;
+  phase           = 'idle';
+
+  document.getElementById('results-overlay').classList.remove('active');
+  closeModal();
+  goToSpreadSelect();
+}
+
+/* ── Boot ── */
+// Overlay is visible by default, nothing else needed
+</script>
+</body>
+</html>
