@@ -1137,6 +1137,7 @@ const CARDS = [
   { id:51, name:"功能",      sub:"Fonction / Function", sym:"ƒ",  kw:"运作 · 关系 · 系统作用",       hint:"物的意义不在于它是什么，而在于它如何运作" },
   { id:52, name:"含混",      sub:"Ambiguïté",           sym:"≈",  kw:"模糊 · 两可 · 边界流动",       hint:"含混不是缺陷，是存在本身的质地" },
   { id:53, name:"价值",      sub:"Valeur / Value",      sym:"◈",  kw:"评价 · 意义 · 应然",           hint:"事物之所以有意义，因为有人如此评价它" },
+  { id:54, name:"涌现",      sub:"Émergence",           sym:"⇑",  kw:"整体 · 复杂性 · 新质生成",     hint:"整体涌现出各部分所没有的新质" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -1593,6 +1594,15 @@ const LORE = {
       { name: "G.E.摩尔", era: "英国，20世纪", text: `《伦理学原理》——"善"是不可定义的简单属性（开放性问题论证）；将善还原为自然属性是"自然主义谬误"；价值是直觉把握的非自然属性，不能从事实推导出价值（休谟的是/应然区分）。` },
       { name: "约翰·杜威", era: "美国，19-20世纪", text: `工具主义价值论——价值不是永恒的，而是在具体情境中通过探究（inquiry）确定的；"可珍视的"（prized）与"值得珍视的"（prizeable）之间的区别，是价值评估的核心问题；价值在实践检验中被修正和确立。` }
     ]
+  },
+  54: {
+    divination: `此刻正在发生的，也许不是某个单一原因导致的结果，而是多种力量交织之后涌现出的新质——你无法从任何单一要素中预测它。这张牌提醒你：整体有其自身的逻辑，不要只盯着局部找答案。`,
+    philosophers: [
+      { name: "亚里士多德", era: "古希腊，公元前4世纪", text: `"整体大于部分之和"——形式（morphē）赋予质料（hylē）以统一性，这个统一性不能还原为各部分的堆叠；生命体的灵魂是身体各部分得以协同运作的形式原理，涌现在亚里士多德这里是形式对质料的组织力量。` },
+      { name: "伊利亚·普里戈金", era: "比利时，20世纪", text: `耗散结构理论——远离平衡态的开放系统在能量流动中可以自发产生有序结构（如贝纳德对流、化学振荡）；涌现是复杂性的核心：在临界点，系统突变为具有新属性的更高层次组织，时间的箭头与创造性不可分。` },
+      { name: "菲利普·安德森", era: "美国，20世纪", text: `"More is Different"（1972）——每个复杂性层次都有其自身的涌现规律，不能被还原到更低层次的物理定律；超导、磁性、生命的属性不是粒子属性的简单叠加，而是新的涌现秩序；还原论在面对涌现时失效。` },
+      { name: "亨利·柏格森", era: "法国，19-20世纪", text: `创化论（L'Évolution créatrice）——生命的演化是真正的创造，涌现出无法从过去预测的新形式；生命冲力（élan vital）不是预定程序的展开，而是在物质阻力中不断涌现的创造性力量；每一个真正的新颖都是涌现。` }
+    ]
   }
 };
 
@@ -1668,7 +1678,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(53).keys()]);
+  shuffledDeck    = shuffle([...Array(54).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
@@ -2073,7 +2083,7 @@ function startInfinite() {
   infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
-  shuffledDeck   = shuffle([...Array(53).keys()]);
+  shuffledDeck   = shuffle([...Array(54).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
@@ -2102,7 +2112,7 @@ function drawInfiniteCard(el, cardIdx) {
   // Pick a truly random card each click, different from the last drawn
   const lastIdx = infiniteDrawn.length > 0 ? infiniteDrawn[infiniteDrawn.length - 1].cardIdx : -1;
   let newIdx;
-  do { newIdx = Math.floor(Math.random() * 53); } while (newIdx === lastIdx);
+  do { newIdx = Math.floor(Math.random() * 54); } while (newIdx === lastIdx);
   cardIdx = newIdx;
 
   const isUpright = Math.random() > 0.35;
