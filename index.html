@@ -837,28 +837,21 @@ body {
 }
 .modal-ai-response.visible { display: block; }
 
-.modal-ai-key-row {
-  display: flex;
-  align-items: center;
-  justify-content: flex-end;
-  gap: 8px;
-  margin-top: 10px;
+.modal-ai-key-prompt {
+  margin-top: 12px;
+  padding: 12px 14px;
+  background: rgba(139,105,20,.07);
+  border: 1px dashed rgba(139,105,20,.4);
+  border-radius: 8px;
 }
-.modal-ai-key-status { font-size: 11px; color: #9a7848; font-family: sans-serif; }
-.modal-ai-key-status.set { color: #5a8a3a; }
-.modal-ai-key-toggle {
-  background: none;
-  border: 1px solid rgba(139,105,20,.3);
-  border-radius: 5px;
-  padding: 3px 9px;
-  font-size: 11px;
-  color: #9a7848;
-  cursor: pointer;
+.modal-ai-key-prompt-text {
+  font-size: 12px;
+  color: #6b4810;
+  margin: 0 0 8px;
+  line-height: 1.5;
   font-family: sans-serif;
 }
-.modal-ai-key-toggle:hover { border-color: #8b6914; color: #4a2800; }
-.modal-ai-key-panel {
-  margin-top: 8px;
+.modal-ai-key-prompt-row {
   display: flex;
   gap: 6px;
 }
@@ -871,6 +864,7 @@ body {
   font-size: 12px;
   color: #2e1800;
   outline: none;
+  font-family: monospace;
 }
 .modal-ai-key-input:focus { border-color: #a07828; }
 .modal-ai-key-save {
@@ -882,7 +876,9 @@ body {
   font-size: 12px;
   cursor: pointer;
   white-space: nowrap;
+  letter-spacing: 0.5px;
 }
+
 .modal-section-title {
   font-size: 9px;
   color: #8b6914;
@@ -1054,26 +1050,27 @@ body {
     <div class="modal-section-title">✦ 哲学溯源 ✦</div>
     <div id="m-philosophers"></div>
 
-    <div class="modal-divider" style="margin-top:20px"></div>
-    <div class="modal-section-title">✦ AI 解牌 ✦</div>
-    <div class="modal-ai-section">
-      <textarea
-        id="m-ai-input"
-        class="modal-ai-textarea"
-        placeholder="在此输入你的问题或当下情境，例如：我最近在犹豫是否要换工作……"
-        oninput="onAiInputChange()"
-        rows="3"
-      ></textarea>
-      <button id="m-ai-btn" class="modal-ai-btn" onclick="askAI()" disabled>✦ AI 解牌 ✦</button>
-      <div id="m-ai-response" class="modal-ai-response"></div>
-      <div class="modal-ai-key-row">
-        <span id="m-key-status" class="modal-ai-key-status"></span>
-        <button class="modal-ai-key-toggle" onclick="toggleKeyPanel()">⚙ 设置 API Key</button>
-      </div>
-      <div id="m-key-panel" class="modal-ai-key-panel" style="display:none">
-        <input id="m-key-input" class="modal-ai-key-input" type="password"
-               placeholder="sk-xxxx（DeepSeek API Key）" />
-        <button class="modal-ai-key-save" onclick="saveKey()">保存</button>
+    <div id="m-ai-section">
+      <div class="modal-divider" style="margin-top:20px"></div>
+      <div class="modal-section-title">✦ AI 解牌 ✦</div>
+      <div class="modal-ai-section">
+        <textarea
+          id="m-ai-input"
+          class="modal-ai-textarea"
+          placeholder="在此输入你的问题或当下情境，例如：我最近在犹豫是否要换工作……"
+          oninput="onAiInputChange()"
+          rows="3"
+        ></textarea>
+        <button id="m-ai-btn" class="modal-ai-btn" onclick="askAI()" disabled>✦ AI 解牌 ✦</button>
+        <div id="m-ai-response" class="modal-ai-response"></div>
+        <div id="m-key-prompt" class="modal-ai-key-prompt" style="display:none">
+          <p class="modal-ai-key-prompt-text">首次使用请输入 DeepSeek API Key（仅保存在您的浏览器中）</p>
+          <div class="modal-ai-key-prompt-row">
+            <input id="m-key-prompt-input" class="modal-ai-key-input" type="password"
+                   placeholder="sk-xxxx" />
+            <button class="modal-ai-key-save" onclick="saveKeyAndAsk()">确认并解牌</button>
+          </div>
+        </div>
       </div>
     </div>
 
@@ -1100,7 +1097,7 @@ const CARDS = [
   { id:12, name:"同构",       sub:"Isomorphism",      sym:"≅",  kw:"映射 · 对应 · 结构",       hint:"不同事物共享同一深层形式" },
   { id:13, name:"拓扑",       sub:"Topology",         sym:"∿",  kw:"连续 · 变形 · 不变量",     hint:"形变之中寻找不变的本质" },
   { id:14, name:"肉质",       sub:"Chair",            sym:"♥",  kw:"身体 · 感知 · 具身",       hint:"思想栖居于肉身之中" },
-  { id:15, name:"场域/矩阵",  sub:"Champ / Field",    sym:"⊞",  kw:"力场 · 位置 · 关系网络",   hint:"位置决定意义" },
+  { id:15, name:"场域/矩阵/结构", sub:"Champ / Field / Structure", sym:"⊞", kw:"力场 · 位置 · 深层秩序", hint:"看不见的结构在决定你能看见什么" },
   { id:16, name:"畸变/奇点",  sub:"Singularity",      sym:"✸",  kw:"异常 · 临界 · 突变",       hint:"规则在此处失效" },
   { id:17, name:"事件",       sub:"Événement",        sym:"⚡", kw:"发生 · 涌现 · 断裂",       hint:"事件打破既有的秩序" },
   { id:18, name:"被动",       sub:"Passivity",        sym:"☾",  kw:"承受 · 接纳 · 他性",       hint:"在被动中开放于他者" },
@@ -1251,11 +1248,12 @@ const LORE = {
     ]
   },
   15: {
-    divination: `你的处境不只是你个人的——你所在的"场域"：社会位置、关系网络、权力结构，正在无形中塑造着你。识别这个场域，是改变的第一步。`,
+    divination: `你的处境不只是你个人的——你所在的场域、关系矩阵、深层结构，正在无形中规定着什么是可能的、什么是不可见的。此刻你感受到的限制，也许不来自你自身，而来自那个框定你的结构本身。识别它，才能在其中找到真正属于你的位置。`,
     philosophers: [
-      { name: "皮埃尔·布迪厄", era: "法国，20世纪", text: `场域（champ）是社会空间中各行动者争夺特定资本（经济的、文化的、社会的）的结构性竞技场，惯习（habitus）是场域在身体上留下的印记——位置决定意义，场域决定可能性。` },
-      { name: "库尔特·勒温", era: "德国-美国，20世纪", text: `场论心理学认为行为是人与心理场（生活空间）的函数B=f(P,E)——不能脱离情境来理解个体行为，改变行为需要改变整个场域，而非仅仅改变个体。` },
-      { name: "克劳德·列维-斯特劳斯", era: "法国，20世纪", text: `文化现象只有在其关系网络（矩阵）中才有意义——每个元素的价值由它在整个结构矩阵中的位置决定，元素本身并不携带固有意义。` }
+      { name: "皮埃尔·布迪厄", era: "法国，20世纪", text: `场域（champ）是各行动者争夺特定资本的结构性竞技场，惯习（habitus）是场域在身体上留下的印记——位置决定意义，场域决定可能性的边界，改变处境必须先改变场域中的位置。` },
+      { name: "克劳德·列维-斯特劳斯", era: "法国，20世纪", text: `结构主义认为文化现象只有在关系矩阵（structure）中才有意义——表面上千差万别的神话、亲属制度背后隐藏着普遍的深层结构；元素本身没有固有意义，意义来自对立与差异的关系网络。` },
+      { name: "路易·阿尔都塞", era: "法国，20世纪", text: `意识形态国家机器（ISA）将结构内化为个体的"自愿"认同——主体在被呼唤（interpellation）的瞬间，就已经在结构中占据了一个位置；我们以为是自由选择的，往往是结构的再生产。` },
+      { name: "库尔特·勒温", era: "德国-美国，20世纪", text: `场论心理学：行为是人与心理场的函数 B=f(P,E)——不能脱离情境理解个体，改变行为需改变整个场域的力量格局，而非仅仅作用于单独的个体。` }
     ]
   },
   16: {
@@ -1855,9 +1853,9 @@ function onExtraCardClick(el, cardIdx) {
 // Current card context for AI reading
 let _aiCard = null;
 
-function openModal(cardIdx, position, isUpright) {
+function openModal(cardIdx, position, isUpright, showAI = true) {
   const card = CARDS[cardIdx];
-  _aiCard = { card, position, isUpright };
+  _aiCard = showAI ? { card, position, isUpright } : null;
 
   document.getElementById('m-pos').textContent    = position;
   document.getElementById('m-orient').textContent = isUpright ? '✦ 正位 ✦' : '✦ 逆位 ✦';
@@ -1885,14 +1883,17 @@ function openModal(cardIdx, position, isUpright) {
     });
   }
 
-  // Reset AI area
-  document.getElementById('m-ai-input').value = '';
-  document.getElementById('m-ai-btn').disabled = true;
-  const resp = document.getElementById('m-ai-response');
-  resp.textContent = '';
-  resp.classList.remove('visible');
-  updateKeyStatus();
-  document.getElementById('m-key-panel').style.display = 'none';
+  // Show/hide AI section
+  const aiSection = document.getElementById('m-ai-section');
+  aiSection.style.display = showAI ? '' : 'none';
+  if (showAI) {
+    document.getElementById('m-ai-input').value = '';
+    document.getElementById('m-ai-btn').disabled = true;
+    const resp = document.getElementById('m-ai-response');
+    resp.textContent = '';
+    resp.classList.remove('visible');
+    document.getElementById('m-key-prompt').style.display = 'none';
+  }
 
   const mc = document.querySelector('.modal-card');
   mc.scrollTop = 0;
@@ -1910,37 +1911,12 @@ function onAiInputChange() {
   document.getElementById('m-ai-btn').disabled = val.length === 0;
 }
 
-function updateKeyStatus() {
-  const key = localStorage.getItem('ds_api_key') || '';
-  const el = document.getElementById('m-key-status');
-  if (key) {
-    el.textContent = '✓ Key 已设置';
-    el.className = 'modal-ai-key-status set';
-  } else {
-    el.textContent = '未设置 Key';
-    el.className = 'modal-ai-key-status';
-  }
-}
-
-function toggleKeyPanel() {
-  const panel = document.getElementById('m-key-panel');
-  const visible = panel.style.display !== 'none';
-  panel.style.display = visible ? 'none' : 'flex';
-  if (!visible) {
-    const stored = localStorage.getItem('ds_api_key') || '';
-    document.getElementById('m-key-input').value = stored;
-  }
-}
-
-function saveKey() {
-  const val = document.getElementById('m-key-input').value.trim();
-  if (val) {
-    localStorage.setItem('ds_api_key', val);
-  } else {
-    localStorage.removeItem('ds_api_key');
-  }
-  document.getElementById('m-key-panel').style.display = 'none';
-  updateKeyStatus();
+function saveKeyAndAsk() {
+  const val = document.getElementById('m-key-prompt-input').value.trim();
+  if (!val) return;
+  localStorage.setItem('ds_api_key', val);
+  document.getElementById('m-key-prompt').style.display = 'none';
+  askAI();
 }
 
 async function askAI() {
@@ -1950,8 +1926,8 @@ async function askAI() {
 
   const apiKey = localStorage.getItem('ds_api_key') || '';
   if (!apiKey) {
-    document.getElementById('m-key-panel').style.display = 'flex';
-    document.getElementById('m-key-input').focus();
+    document.getElementById('m-key-prompt').style.display = 'block';
+    document.getElementById('m-key-prompt-input').focus();
     return;
   }
 
@@ -2152,7 +2128,7 @@ function showAllCards() {
       ${card.sub ? `<div class="bc-sub">${card.sub}</div>` : ''}
       <div class="bc-kw">${card.kw}</div>
       <div class="bc-hint">${card.hint}</div>`;
-    el.addEventListener('click', () => openModal(card.id - 1, card.name, true));
+    el.addEventListener('click', () => openModal(card.id - 1, card.name, true, false));
     grid.appendChild(el);
   });
 }
