@@ -672,7 +672,7 @@ body {
       </button>
       <button class="spread-btn" onclick="showAllCards()" style="grid-column: 1 / -1; background: transparent; border: 1px dashed rgba(180,148,70,.4); color:#9a7848;">
         <span class="sname" style="font-weight:normal; font-size:14px; letter-spacing:3px; color:#7a6038;">全部卡牌</span>
-        <span class="sdesc">浏览四十一张哲学牌的完整含义</span>
+        <span class="sdesc">浏览四十四张哲学牌的完整含义</span>
       </button>
     </div>
   </div>
@@ -778,7 +778,10 @@ const CARDS = [
   { id:38, name:"视点/选择",  sub:"Perspective",      sym:"◎",  kw:"透视 · 决断 · 诠释框架",   hint:"你从何处看，决定你看见什么" },
   { id:39, name:"无限",       sub:"Infini / ∞",       sym:"∞",  kw:"无穷 · 超越 · 绝对",       hint:"有限之物凝视无限时的眩晕" },
   { id:40, name:"主客之隔",  sub:"Subject / Object",  sym:"‖",  kw:"主体 · 客体 · 认识论 · 疏离",  hint:"认识者与被认识者之间那道永恒的裂缝" },
-  { id:41, name:"可能性",    sub:"Possibilité",        sym:"◇",  kw:"潜能 · 虚拟 · 尚未 · 开放",   hint:"尚未发生的，比已经发生的更真实" },
+  { id:41, name:"可能性",    sub:"Possibilité",        sym:"◇",  kw:"潜能 · 虚拟 · 尚未 · 开放",      hint:"尚未发生的，比已经发生的更真实" },
+  { id:42, name:"诞生/起源", sub:"Arché",              sym:"✦",  kw:"起点 · 原初 · 不可追溯 · 涌现",  hint:"每一个起源都已是对更早起源的遗忘" },
+  { id:43, name:"抵抗",      sub:"Résistance",         sym:"⊻",  kw:"反力 · 拒绝 · 裂缝 · 主体性",   hint:"权力所到之处，抵抗已然在场" },
+  { id:44, name:"沉默",      sub:"Silence",            sym:"·",  kw:"不可言说 · 边界 · 留白 · 虚空",  hint:"语言止步之处，意义才真正开始" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -847,7 +850,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(41).keys()]);
+  shuffledDeck    = shuffle([...Array(44).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
