@@ -1385,9 +1385,14 @@ function drawInfiniteCard(el, cardIdx) {
 ═══════════════════════════════════════════════════════ */
 function goToSpreadSelect() {
   document.getElementById('results-overlay').classList.remove('active');
-  document.getElementById('screen-deck').classList.remove('active');
+  document.getElementById('screen-deck').classList.remove('active', 'infinite-active');
   document.getElementById('screen-cards').classList.remove('active');
   document.getElementById('screen-spread').classList.add('active');
+  document.getElementById('infinite-bar').classList.remove('active');
+  document.getElementById('infinite-bar-cards').innerHTML = '';
+  document.getElementById('progress').style.display = '';
+  isInfiniteMode = false;
+  infiniteDrawn  = [];
   closeModal();
 }
 
