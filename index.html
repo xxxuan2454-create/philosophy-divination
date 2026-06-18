@@ -11,8 +11,9 @@ body {
   background: #ede0c8;
   font-family: 'Georgia', 'STSong', '宋体', serif;
   min-height: 100vh;
+  min-height: 100dvh;
   user-select: none;
-  overflow-x: hidden;
+  overflow: hidden;
 }
 
 /* ══════════════════════════════════════
@@ -115,6 +116,8 @@ body {
   flex-wrap: wrap;
   gap: 7px;
   align-content: flex-start;
+  overflow-y: auto;
+  -webkit-overflow-scrolling: touch;
 }
 
 /* ══════════════════════════════════════
@@ -926,6 +929,121 @@ body {
   line-height: 1.75;
   margin-top: 5px;
 }
+
+/* ══════════════════════════════════════
+   MOBILE RESPONSIVE  (≤ 640px)
+══════════════════════════════════════ */
+@media (max-width: 640px) {
+  /* Use dynamic viewport height to avoid Safari chrome overlap */
+  .screen {
+    position: fixed;
+    inset: 0;
+    height: 100dvh;
+  }
+
+  /* Spread selection — narrow the box */
+  .spread-box {
+    width: 100%;
+    padding: 0 18px;
+  }
+  .spread-box h1 { font-size: 32px; letter-spacing: 6px; }
+  .spread-grid { grid-template-columns: 1fr 1fr; }
+
+  /* ── Screen 2: Deck ── */
+  /* Stack vertically: compact top bar + scrollable card grid */
+  #screen-deck {
+    flex-direction: column;
+  }
+
+  /* Right panel becomes a compact horizontal bar at the top */
+  #right-panel {
+    width: 100%;
+    min-width: unset;
+    flex-direction: row;
+    align-items: center;
+    flex-wrap: wrap;
+    gap: 8px;
+    padding: 10px 14px;
+    border-left: none;
+    border-bottom: 1px solid #c8a84b;
+    flex-shrink: 0;
+    background: rgba(238,220,185,.85);
+  }
+
+  #change-btn {
+    align-self: auto;
+    padding: 7px 12px;
+    font-size: 13px;
+    order: -1;
+  }
+
+  #instruction {
+    font-size: 15px;
+    line-height: 1.3;
+    flex: 1;
+  }
+
+  #needed-count {
+    font-size: 32px !important;
+    display: inline !important;
+  }
+
+  #progress {
+    font-size: 12px;
+    flex-basis: 100%;
+    min-height: unset;
+  }
+
+  #reveal-btn {
+    width: 100%;
+    padding: 10px;
+    font-size: 14px;
+  }
+
+  /* Card grid fills remaining space and scrolls */
+  #grid-area {
+    flex: 1;
+    overflow-y: auto;
+    -webkit-overflow-scrolling: touch;
+    padding: 12px 10px;
+    gap: 6px;
+  }
+
+  /* Slightly smaller cards on mobile */
+  .card {
+    width: 68px;
+    height: 104px;
+  }
+
+  /* Results overlay — full scroll */
+  #results-overlay {
+    padding: 24px 14px 40px;
+  }
+
+  /* Spread grids: shrink columns for narrow screens */
+  .spread-cross,
+  .spread-h {
+    grid-template-columns: repeat(3, 100px);
+  }
+  .spread-9 {
+    grid-template-columns: repeat(3, 100px);
+  }
+  .result-card {
+    width: 95px;
+    height: 170px;
+  }
+
+  /* Cards browser */
+  #cards-browser-grid {
+    padding: 16px 12px 32px;
+    gap: 10px;
+  }
+
+  /* Infinite bar — safe area bottom padding */
+  #infinite-bar {
+    padding-bottom: max(16px, env(safe-area-inset-bottom));
+  }
+}
 </style>
 </head>
 <body>
@@ -1110,7 +1228,7 @@ const CARDS = [
   { id:24, name:"缺失/过剩",  sub:"Manque / Excès",   sym:"□",  kw:"空洞 · 溢出 · 匮乏与丰溢", hint:"欲望在缺失与过剩之间震荡" },
   { id:25, name:"献祭",       sub:"Sacrifice",        sym:"△",  kw:"牺牲 · 奉献 · 交换",       hint:"失去什么以换取什么" },
   { id:26, name:"极限/限制",  sub:"Limite",           sym:"⊂",  kw:"边界 · 约束 · 有限性",     hint:"极限定义了可能性的形状" },
-  { id:27, name:"中心",       sub:"Centre",           sym:"✙",  kw:"核心 · 缺席的在场 · 支点", hint:"中心是组织结构的幻象" },
+  { id:27, name:"中心/本质",   sub:"Centre / Ousia",   sym:"✙",  kw:"核心 · 本质 · 缺席的在场 · 支点 · 幻象", hint:"中心是幻象，本质是追问" },
   { id:28, name:"悖论",       sub:"Paradox",          sym:"⊗",  kw:"矛盾 · 自毁 · 张力",       hint:"两个真理在此相撞" },
   { id:29, name:"死亡",       sub:"Mort / Tod",       sym:"✝",  kw:"终结 · 有限性 · 向死而生", hint:"死亡使生命成为可能" },
   { id:30, name:"道德/政治",  sub:"Ethics / Polis",   sym:"⚖",  kw:"善 · 义务 · 权力",         hint:"伦理从不在真空中存在" },
@@ -1357,11 +1475,12 @@ const LORE = {
     ]
   },
   27: {
-    divination: `你是否一直在寻找那个支撑一切的中心？也许没有固定的中心，只有不断更换的焦点。找到当下真正重要的那一点，就是此刻的中心。`,
+    divination: `你是否一直在寻找那个支撑一切的中心，或者事物背后那个不变的本质？也许中心从未真正在场，本质也并非等待被发现的固定之物。此刻值得停下来追问：你认为"本质如此"的那些判断，是照见了真实，还是投射了幻象？`,
     philosophers: [
-      { name: "雅克·德里达", era: "法国，20世纪", text: `《结构、符号与游戏》——每个结构都假设一个中心，但这个中心既不属于结构之内也不属于其外；中心是一个矛盾的原则，它的缺席允许了无限的游戏替补，结构以其中心的虚空为条件。` },
-      { name: "柏拉图", era: "古希腊，公元前5-4世纪", text: `"善的理念"是一切存在与知识的中心和来源——一切可知之物之所以可知、一切存在之物之所以存在，都因为分有了善；善是太阳，让一切其他东西可见。` },
-      { name: "克劳德·列维-斯特劳斯", era: "法国，20世纪", text: `结构主义假设一个深层结构（centre）组织表面现象——但这个中心本身从不直接出现，只能从其效果中被推断；中心是结构的必要虚构，而非可以找到的实体。` }
+      { name: "亚里士多德", era: "古希腊，公元前4世纪", text: `"本质"（ousia，实体/本质）是哲学的首要问题——事物之所是（to ti ên einai）构成其本质，是使它成为它自身而非他物的内在规定；本质不在感官之外，而就内在于具体事物的形式之中。` },
+      { name: "雅克·德里达", era: "法国，20世纪", text: `《结构、符号与游戏》——每个结构都假设一个中心，但这个中心既不属于结构之内也不属于其外；中心是一个矛盾的原则，它的缺席允许了无限的游戏替补，"本质"同样是一种稳定化的幻象，用以压制意义的无限播撒。` },
+      { name: "柏拉图", era: "古希腊，公元前5-4世纪", text: `理念（eidos）是万物的真正本质与中心来源——可感事物因分有理念而存在，善的理念是一切本质中的本质；但这个"中心"高悬于感官世界之外，永远无法被直接触及，只能被灵魂朝向。` },
+      { name: "让-保罗·萨特", era: "法国，20世纪", text: `"存在先于本质"——人没有预先给定的本质，人是自我创造的存在；拒绝任何固定的"中心"或"本质"对人的规定，正是人之自由与责任的根基。` }
     ]
   },
   28: {
