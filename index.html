@@ -2077,17 +2077,44 @@ async function askResAI() {
   resp.classList.remove('visible');
 
   // Build context from all drawn cards
-  const cardsContext = selectedOrder.map((cardIdx, i) => {
-    const card = CARDS[cardIdx];
-    const pos  = currentSpread.positions[i] || `第${i+1}张`;
-    const ori  = orientations[i] ? '正位' : '逆位';
-    const lore = LORE[card.id];
-    return `【${pos}】${card.name}（${ori}）\n关键词：${card.kw}\n寓意：${card.hint}${lore ? '\n解读：' + lore.divination : ''}`;
-  }).join('\n\n');
+  let cardsContext;
+  if (currentSpread.layout === 'h') {
+    // H spread: positions 0-2 = 主体(过去/当下/走向), 3 = 连接, 4-6 = 客体(过去/当下/走向)
+    const hCards = selectedOrder.map((cardIdx, i) => {
+      const card = CARDS[cardIdx];
+      const ori  = orientations[i] ? '正位' : '逆位';
+      const lore = LORE[card.id];
+      return { card, ori, lore };
+    });
+    const timeLabels = ['过去', '当下', '走向'];
+    const pairText = timeLabels.map((label, i) => {
+      const subj = hCards[i];
+      const obj  = hCards[i + 4];
+      return `【${label}·对应轴】\n` +
+        `  主体·${label}：${subj.card.name}（${subj.ori}）关键词：${subj.card.kw}\n` +
+        `  客体·${label}：${obj.card.name}（${obj.ori}）关键词：${obj.card.kw}\n` +
+        `  ↔ 客体以「${obj.card.name}」的方式作用于主体，促成主体呈现「${subj.card.name}」；主体以「${subj.card.name}」的方式回应并塑造客体，促成客体呈现「${obj.card.name}」。`;
+    }).join('\n\n');
+    const bridge = hCards[3];
+    cardsContext = pairText + '\n\n' +
+      `【主客之连接】${bridge.card.name}（${bridge.ori}）\n关键词：${bridge.card.kw}\n寓意：${bridge.card.hint}${bridge.lore ? '\n解读：' + bridge.lore.divination : ''}`;
+  } else {
+    cardsContext = selectedOrder.map((cardIdx, i) => {
+      const card = CARDS[cardIdx];
+      const pos  = currentSpread.positions[i] || `第${i+1}张`;
+      const ori  = orientations[i] ? '正位' : '逆位';
+      const lore = LORE[card.id];
+      return `【${pos}】${card.name}（${ori}）\n关键词：${card.kw}\n寓意：${card.hint}${lore ? '\n解读：' + lore.divination : ''}`;
+    }).join('\n\n');
+  }
+
+  const hInstruction = currentSpread.layout === 'h'
+    ? '\n\n【H牌阵解读要点】同一时间轴上，主体与客体的牌是相互对应、双向构成的关系——不是主体单方面受到客体影响，也不是客体单方面受到主体影响，而是：客体的状态影响并塑造了主体在该时间点上的处境与呈现，同时主体的状态也在塑造和作用于客体。解读时请始终把握这种互构张力，避免把主客分开单独解读。'
+    : '';
 
   const systemPrompt = `你是一位融合哲学深度与直觉智慧的占卜解读师。你的解读风格：文字克制而有力，善用哲学隐喻，不过度安慰也不消极，帮助提问者看到当下处境的多个维度。结合多张牌的整体格局给出综合解读，300-450字，用中文。`;
 
-  const userPrompt = `牌阵名称：${currentSpread.name}
+  const userPrompt = `牌阵名称：${currentSpread.name}${hInstruction}
 
 本次抽到的牌：
 ${cardsContext}
