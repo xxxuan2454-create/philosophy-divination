@@ -850,44 +850,6 @@ body {
   white-space: pre-wrap;
 }
 .res-ai-response.visible { display: block; }
-.res-ai-key-prompt {
-  margin-top: 12px;
-  padding: 12px 14px;
-  background: rgba(139,105,20,.1);
-  border: 1px dashed rgba(200,160,80,.4);
-  border-radius: 8px;
-  text-align: left;
-}
-.res-ai-key-prompt-text {
-  font-size: 12px;
-  color: #c8a050;
-  margin: 0 0 8px;
-  line-height: 1.5;
-  font-family: sans-serif;
-}
-.res-ai-key-prompt-row { display: flex; gap: 6px; }
-.res-ai-key-input {
-  flex: 1;
-  background: rgba(255,252,240,.1);
-  border: 1.5px solid rgba(139,105,20,.4);
-  border-radius: 6px;
-  padding: 7px 10px;
-  font-size: 13px;
-  color: #f0e4c0;
-  outline: none;
-  font-family: monospace;
-}
-.res-ai-key-input:focus { border-color: #c8a050; }
-.res-ai-key-save {
-  background: linear-gradient(160deg, #7a3a06, #5a2604);
-  color: #f8edd5;
-  border: none;
-  border-radius: 6px;
-  padding: 7px 16px;
-  font-size: 13px;
-  cursor: pointer;
-  white-space: nowrap;
-}
 
 .modal-section-title {
   font-size: 9px;
@@ -1160,13 +1122,6 @@ body {
       oninput="onResAiInputChange()" rows="3"></textarea>
     <button id="res-ai-btn" class="res-ai-btn" onclick="askResAI()" disabled>✦ AI 解牌 ✦</button>
     <div id="res-ai-response" class="res-ai-response"></div>
-    <div id="res-key-prompt" class="res-ai-key-prompt" style="display:none">
-      <p class="res-ai-key-prompt-text">首次使用请输入 DeepSeek API Key（仅保存在您的浏览器中）</p>
-      <div class="res-ai-key-prompt-row">
-        <input id="res-key-input" class="res-ai-key-input" type="password" placeholder="sk-xxxx" />
-        <button class="res-ai-key-save" onclick="saveResKeyAndAsk()">确认并解牌</button>
-      </div>
-    </div>
   </div>
 
   <div class="results-actions">
@@ -2108,24 +2063,11 @@ function onResAiInputChange() {
   document.getElementById('res-ai-btn').disabled = val.length === 0;
 }
 
-function saveResKeyAndAsk() {
-  const val = document.getElementById('res-key-input').value.trim();
-  if (!val) return;
-  localStorage.setItem('ds_api_key', val);
-  document.getElementById('res-key-prompt').style.display = 'none';
-  askResAI();
-}
-
 async function askResAI() {
   const question = document.getElementById('res-ai-input').value.trim();
   if (!question) return;
 
-  const apiKey = localStorage.getItem('ds_api_key') || '';
-  if (!apiKey) {
-    document.getElementById('res-key-prompt').style.display = 'block';
-    document.getElementById('res-key-input').focus();
-    return;
-  }
+  const apiKey = '__DS_API_KEY__';
 
   const btn  = document.getElementById('res-ai-btn');
   const resp = document.getElementById('res-ai-response');
