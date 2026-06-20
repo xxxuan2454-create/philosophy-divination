@@ -1010,6 +1010,27 @@ body {
 </head>
 <body>
 
+<!-- 右上角用户按钮 -->
+<div id="user-corner" style="position:fixed;top:14px;right:16px;z-index:500">
+  <button id="user-btn" onclick="userBtnClick()"
+    style="background:rgba(62,34,8,.75);color:#f5e8c8;border:1px solid rgba(200,168,75,.4);border-radius:20px;padding:6px 16px;font-size:13px;font-family:inherit;cursor:pointer;letter-spacing:1px;backdrop-filter:blur(4px);">
+    登录
+  </button>
+</div>
+
+<!-- 余额不足提示弹窗 -->
+<div id="coin-modal" style="display:none;position:fixed;inset:0;background:rgba(20,10,0,.8);z-index:800;align-items:center;justify-content:center;">
+  <div style="background:linear-gradient(160deg,#f8edd5,#fff9ec);border:2px solid #c8a84b;border-radius:12px;padding:32px 36px;text-align:center;max-width:300px;box-shadow:0 12px 40px rgba(0,0,0,.4);">
+    <div style="font-size:28px;margin-bottom:12px;">✦</div>
+    <div id="coin-modal-msg" style="font-size:15px;color:#2a1800;margin-bottom:20px;line-height:1.7;"></div>
+    <div style="display:flex;gap:10px;justify-content:center;">
+      <button onclick="document.getElementById('coin-modal').style.display='none'"
+        style="background:transparent;border:1.5px solid #c8a84b;border-radius:8px;padding:8px 18px;font-size:13px;font-family:inherit;cursor:pointer;color:#7a5c2a;">取消</button>
+      <button id="coin-modal-action" style="background:linear-gradient(160deg,#9e4510,#7a2e05);color:#f8edd5;border:none;border-radius:8px;padding:8px 18px;font-size:13px;font-family:inherit;cursor:pointer;letter-spacing:1px;"></button>
+    </div>
+  </div>
+</div>
+
 <!-- ═══════════════════ SCREEN 1: SPREAD SELECTION ═══════════════════ -->
 <div id="screen-spread" class="screen active">
   <div class="spread-box">
@@ -2063,11 +2084,37 @@ function onResAiInputChange() {
   document.getElementById('res-ai-btn').disabled = val.length === 0;
 }
 
+function showCoinModal(msg, actionText, actionFn) {
+  document.getElementById('coin-modal-msg').textContent = msg;
+  const actionBtn = document.getElementById('coin-modal-action');
+  actionBtn.textContent = actionText;
+  actionBtn.onclick = actionFn;
+  document.getElementById('coin-modal').style.display = 'flex';
+}
+
 async function askResAI() {
   const question = document.getElementById('res-ai-input').value.trim();
   if (!question) return;
 
-  const apiKey = 'sk-5484ef58649841a4974009e5a6271471';
+  // 登录检查
+  const token = localStorage.getItem('zb_token');
+  if (!token) {
+    showCoinModal('请先登录，才能使用 AI 解牌', '去登录', () => { window.location.href = '/login.html'; });
+    return;
+  }
+
+  // 余额检查
+  const meRes = await fetch('/api/user/me', { headers: { 'Authorization': 'Bearer ' + token } });
+  if (!meRes.ok) {
+    localStorage.removeItem('zb_token');
+    showCoinModal('登录已过期，请重新登录', '去登录', () => { window.location.href = '/login.html'; });
+    return;
+  }
+  const me = await meRes.json();
+  if (me.coin_balance < 1) {
+    showCoinModal('占卜币不足，每次 AI 解牌消耗 1 枚占卜币', '去充值', () => { window.location.href = '/profile.html'; });
+    return;
+  }
 
   const btn  = document.getElementById('res-ai-btn');
   const resp = document.getElementById('res-ai-response');
@@ -2125,20 +2172,14 @@ ${question}
 请结合这个牌阵的整体格局和哲学内核，给出一段有深度的综合占卜解读。`;
 
   try {
-    const res = await fetch('https://api.deepseek.com/v1/chat/completions', {
+    const res = await fetch('/api/ask', {
       method: 'POST',
-      headers: {
-        'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + apiKey
-      },
+      headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
-        model: 'deepseek-chat',
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userPrompt }
-        ],
-        max_tokens: 700,
-        temperature: 0.85
+        ]
       })
     });
 
@@ -2148,6 +2189,20 @@ ${question}
     resp.textContent = text;
     resp.classList.add('visible');
     resp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
+
+    // 扣币 + 保存历史（静默）
+    const cardsJson = selectedOrder.map((cardIdx, i) => ({
+      cardId: CARDS[cardIdx].id, position: currentSpread.positions[i] || `第${i+1}张`, isReversed: !orientations[i]
+    }));
+    fetch('/api/readings/save', {
+      method: 'POST',
+      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('zb_token') },
+      body: JSON.stringify({ spreadType: currentSpread.name, question, cardsJson, aiReading: text })
+    }).then(r => r.json()).then(d => {
+      if (d.coinBalance !== undefined) {
+        document.getElementById('user-balance').textContent = d.coinBalance + ' 币';
+      }
+    }).catch(() => {});
   } catch (err) {
     resp.textContent = '解读失败，请检查网络或 Key 是否正确。（' + err.message + '）';
     resp.classList.add('visible');
@@ -2158,6 +2213,33 @@ ${question}
 }
 
 document.addEventListener('keydown', e => { if (e.key === 'Escape') closeModal(); });
+
+/* ── 用户角落按钮 ── */
+const userBtn = document.getElementById('user-btn');
+// 在按钮旁边插入余额显示
+const balanceSpan = document.createElement('span');
+balanceSpan.id = 'user-balance';
+balanceSpan.style.cssText = 'font-size:12px;color:#c8a050;margin-right:8px;font-family:sans-serif;display:none;';
+document.getElementById('user-corner').insertBefore(balanceSpan, userBtn);
+
+function userBtnClick() {
+  const token = localStorage.getItem('zb_token');
+  if (token) { window.location.href = '/profile.html'; }
+  else { window.location.href = '/login.html'; }
+}
+
+(async function initUser() {
+  const token = localStorage.getItem('zb_token');
+  if (!token) return;
+  try {
+    const res = await fetch('/api/user/me', { headers: { 'Authorization': 'Bearer ' + token } });
+    if (!res.ok) { localStorage.removeItem('zb_token'); return; }
+    const me = await res.json();
+    userBtn.textContent = '我的';
+    balanceSpan.textContent = me.coin_balance + ' 币';
+    balanceSpan.style.display = 'inline';
+  } catch {}
+})();
 
 /* ═══════════════════════════════════════════════════════
    INFINITE MODE

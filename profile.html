@@ -1,0 +1,406 @@
+<!DOCTYPE html>
+<html lang="zh-CN">
+<head>
+<meta charset="UTF-8">
+<meta name="viewport" content="width=device-width, initial-scale=1.0">
+<title>个人主页 · 哲学占卜</title>
+<style>
+* { margin: 0; padding: 0; box-sizing: border-box; }
+body {
+  background: #e8dcc8;
+  font-family: 'Georgia', 'STSong', '宋体', serif;
+  min-height: 100vh;
+  padding: 32px 16px 60px;
+}
+.container { max-width: 600px; margin: 0 auto; }
+
+.header {
+  text-align: center;
+  margin-bottom: 32px;
+}
+.header h1 { font-size: 28px; color: #2a1800; letter-spacing: 6px; font-weight: normal; }
+.header .phone { font-size: 13px; color: #a08050; margin-top: 6px; letter-spacing: 1px; font-family: sans-serif; }
+
+.back-btn {
+  display: inline-block;
+  background: #3e2208;
+  color: #f5e8c8;
+  border: none;
+  border-radius: 6px;
+  padding: 8px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 1px;
+  text-decoration: none;
+  margin-bottom: 24px;
+}
+
+.card {
+  background: linear-gradient(160deg, #f8f0da, #fffcf0);
+  border: 1.5px solid rgba(200,168,75,.45);
+  border-radius: 12px;
+  padding: 24px;
+  margin-bottom: 20px;
+  box-shadow: 0 4px 16px rgba(0,0,0,.08);
+}
+.card-title {
+  font-size: 11px;
+  color: #c8a050;
+  letter-spacing: 4px;
+  font-family: sans-serif;
+  margin-bottom: 16px;
+}
+
+/* 余额 */
+.balance-num { font-size: 52px; color: #8b3c0a; line-height: 1; margin-bottom: 4px; }
+.balance-sub { font-size: 12px; color: #9a7848; letter-spacing: 1px; }
+
+/* 充值套餐 */
+.plans { display: flex; gap: 10px; margin-top: 16px; }
+.plan-btn {
+  flex: 1;
+  background: linear-gradient(160deg, #fdf6e8, #f5e8d0);
+  border: 1.5px solid rgba(160,125,55,.4);
+  border-radius: 10px;
+  padding: 14px 8px;
+  text-align: center;
+  cursor: pointer;
+  transition: all .2s;
+  font-family: inherit;
+}
+.plan-btn:hover { border-color: #c8a84b; transform: translateY(-2px); box-shadow: 0 6px 16px rgba(0,0,0,.12); }
+.plan-btn.selected { border-color: #8b6914; background: linear-gradient(160deg, #fff8e8, #ffeeca); }
+.plan-coins { font-size: 22px; font-weight: bold; color: #8b3c0a; }
+.plan-price { font-size: 12px; color: #9a7848; margin-top: 4px; }
+.plan-label { font-size: 10px; color: #c8a050; margin-top: 3px; letter-spacing: 1px; font-family: sans-serif; }
+
+.pay-btn {
+  width: 100%;
+  margin-top: 16px;
+  background: linear-gradient(160deg, #9e4510, #7a2e05);
+  color: #f8edd5;
+  border: none;
+  border-radius: 10px;
+  padding: 14px;
+  font-size: 15px;
+  font-family: inherit;
+  cursor: pointer;
+  letter-spacing: 3px;
+  transition: all .2s;
+}
+.pay-btn:hover:not(:disabled) { transform: translateY(-2px); box-shadow: 0 5px 18px rgba(0,0,0,.25); }
+.pay-btn:disabled { opacity: .45; cursor: default; }
+
+/* 历史记录 */
+.reading-item {
+  border-bottom: 1px solid rgba(200,168,75,.25);
+  padding: 14px 0;
+  cursor: pointer;
+  transition: background .15s;
+}
+.reading-item:last-child { border-bottom: none; }
+.reading-item:hover { background: rgba(200,168,75,.06); margin: 0 -12px; padding: 14px 12px; border-radius: 8px; }
+.reading-meta { display: flex; justify-content: space-between; align-items: center; margin-bottom: 4px; }
+.reading-spread { font-size: 13px; font-weight: bold; color: #2a1800; }
+.reading-date { font-size: 11px; color: #a08050; font-family: sans-serif; }
+.reading-question { font-size: 12px; color: #7a5c2a; line-height: 1.5; }
+
+/* 历史详情弹窗 */
+#detail-modal {
+  display: none;
+  position: fixed; inset: 0;
+  background: rgba(10,5,0,.95);
+  z-index: 2000;
+  overflow-y: auto;
+  padding: 32px 16px 50px;
+  flex-direction: column;
+  align-items: center;
+}
+#detail-modal.active { display: flex; }
+.detail-box {
+  width: 100%;
+  max-width: 580px;
+}
+.detail-close {
+  background: none;
+  border: 1.5px solid rgba(200,168,75,.4);
+  border-radius: 6px;
+  color: #c8a050;
+  padding: 7px 16px;
+  font-size: 13px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-bottom: 24px;
+  letter-spacing: 1px;
+}
+.detail-title { color: #f0d890; font-size: 11px; letter-spacing: 6px; text-align: center; margin-bottom: 6px; }
+.detail-spread { color: #c8a040; font-size: 20px; letter-spacing: 3px; text-align: center; margin-bottom: 4px; }
+.detail-date { color: #9a7848; font-size: 11px; text-align: center; font-family: sans-serif; margin-bottom: 20px; }
+.detail-question { color: #c8a050; font-size: 13px; text-align: center; font-style: italic; margin-bottom: 24px; }
+
+/* 卡牌展示（复用主页样式） */
+.spread-linear { display: flex; gap: 12px; flex-wrap: wrap; justify-content: center; margin-bottom: 24px; }
+.spread-cross {
+  display: grid;
+  grid-template-areas: ". top ." "lft ctr rgt" ". bot .";
+  grid-template-columns: 110px 110px 110px;
+  gap: 10px; margin-bottom: 24px; justify-content: center;
+}
+.spread-h {
+  display: grid;
+  grid-template-areas: "a . d" "b e f" "c . g";
+  grid-template-columns: 110px 110px 110px;
+  gap: 10px; margin-bottom: 24px; justify-content: center;
+}
+.spread-9 { display: grid; grid-template-columns: repeat(3, 110px); gap: 10px; margin-bottom: 24px; justify-content: center; }
+
+.hist-card {
+  width: 100px;
+  background: linear-gradient(155deg, #f8f0da 0%, #fffcf0 55%, #f0e8d0 100%);
+  border: 2px solid #8b6914;
+  border-radius: 8px;
+  padding: 10px 6px 8px;
+  text-align: center;
+  position: relative;
+  box-shadow: 0 3px 12px rgba(0,0,0,.35);
+}
+.hist-card::before { content:''; position:absolute; inset:4px; border:1px solid rgba(139,105,20,.3); border-radius:4px; pointer-events:none; }
+.hist-card.reversed { border-color: #6a4090; }
+.hist-card .hc-inner { transition: transform 0s; }
+.hist-card.reversed .hc-inner { transform: rotate(180deg); }
+.hc-pos { font-size: 8px; color: #8b6914; letter-spacing: 1px; margin-bottom: 5px; font-family: sans-serif; }
+.hc-orient { font-size: 7px; font-family: sans-serif; font-weight: bold; margin-bottom: 4px; }
+.hc-orient.up { color: #4a7a1a; }
+.hc-orient.rv { color: #6a4090; }
+.hc-sym  { font-size: 20px; margin-bottom: 3px; }
+.hc-name { font-size: 12px; font-weight: bold; color: #1c0e00; line-height: 1.3; }
+.hc-kw   { font-size: 7px; color: #5a4020; margin-top: 4px; line-height: 1.5; }
+
+.detail-ai-title { color: #c8a050; font-size: 11px; letter-spacing: 4px; font-family: sans-serif; text-align: center; margin-bottom: 14px; }
+.detail-ai-text {
+  background: rgba(139,105,20,.1);
+  border-left: 2.5px solid rgba(200,160,80,.5);
+  border-radius: 8px;
+  padding: 16px 18px;
+  font-size: 14px;
+  color: #f0e4c0;
+  line-height: 1.9;
+  white-space: pre-wrap;
+}
+
+.empty-msg { color: #9a7848; font-size: 14px; text-align: center; padding: 32px 0; font-style: italic; }
+.logout-btn {
+  width: 100%;
+  margin-top: 8px;
+  background: transparent;
+  border: 1px solid rgba(139,105,20,.35);
+  border-radius: 8px;
+  padding: 10px;
+  font-size: 13px;
+  font-family: inherit;
+  color: #9a7848;
+  cursor: pointer;
+  letter-spacing: 2px;
+}
+.logout-btn:hover { background: rgba(139,105,20,.08); }
+</style>
+</head>
+<body>
+<div class="container">
+  <a href="/" class="back-btn">← 返回占卜</a>
+
+  <div class="header">
+    <h1>个人主页</h1>
+    <div class="phone" id="user-phone">加载中…</div>
+  </div>
+
+  <!-- 余额 -->
+  <div class="card">
+    <div class="card-title">✦ 占卜币余额 ✦</div>
+    <div class="balance-num" id="balance-num">—</div>
+    <div class="balance-sub">每次 AI 解牌消耗 1 枚占卜币</div>
+  </div>
+
+  <!-- 充值 -->
+  <div class="card">
+    <div class="card-title">✦ 充值占卜币 ✦</div>
+    <div class="plans">
+      <button class="plan-btn selected" data-coins="10" data-price="5" onclick="selectPlan(this)">
+        <div class="plan-coins">10</div>
+        <div class="plan-price">¥ 5</div>
+        <div class="plan-label">入门</div>
+      </button>
+      <button class="plan-btn" data-coins="40" data-price="18" onclick="selectPlan(this)">
+        <div class="plan-coins">40</div>
+        <div class="plan-price">¥ 18</div>
+        <div class="plan-label">标准</div>
+      </button>
+      <button class="plan-btn" data-coins="70" data-price="30" onclick="selectPlan(this)">
+        <div class="plan-coins">70</div>
+        <div class="plan-price">¥ 30</div>
+        <div class="plan-label">豪华</div>
+      </button>
+    </div>
+    <button class="pay-btn" id="pay-btn" onclick="doPay()">立即充值</button>
+    <div id="pay-msg" style="font-size:12px;color:#9a7848;text-align:center;margin-top:10px;min-height:18px;"></div>
+  </div>
+
+  <!-- 历史记录 -->
+  <div class="card">
+    <div class="card-title">✦ 占卜历史 ✦</div>
+    <div id="history-list"><div class="empty-msg">加载中…</div></div>
+  </div>
+
+  <div class="card" style="padding:16px 24px;">
+    <button class="logout-btn" onclick="doLogout()">退出登录</button>
+  </div>
+</div>
+
+<!-- 历史详情弹窗 -->
+<div id="detail-modal">
+  <div class="detail-box">
+    <button class="detail-close" onclick="closeDetail()">← 返回</button>
+    <div class="detail-title">✦ 占卜记录 ✦</div>
+    <div class="detail-spread" id="d-spread"></div>
+    <div class="detail-date"   id="d-date"></div>
+    <div class="detail-question" id="d-question"></div>
+    <div id="d-cards"></div>
+    <div class="detail-ai-title">✦ AI 整体解牌 ✦</div>
+    <div class="detail-ai-text" id="d-ai"></div>
+  </div>
+</div>
+
+<script>
+const CARDS_MAP = {
+  1:{name:"延异",sym:"∂",kw:"推迟 · 差异 · 踪迹"},2:{name:"递归",sym:"↺",kw:"自我指涉 · 嵌套 · 无穷"},
+  3:{name:"此在/Be(ing)",sym:"◉",kw:"此在 · 存在 · 临在"},4:{name:"符号",sym:"§",kw:"能指 · 所指 · 意指"},
+  5:{name:"分裂",sym:"⊕",kw:"断裂 · 割裂 · 他者"},6:{name:"精神",sym:"Ψ",kw:"意识 · 绝对 · 扬弃"},
+  7:{name:"无中生有",sym:"☆",kw:"创造 · 虚无 · 绝对起点"},8:{name:"辨证/综合",sym:"↻",kw:"正题 · 反题 · 合题"},
+  9:{name:"否定/拒绝",sym:"¬",kw:"否认 · 拒斥 · 压抑"},10:{name:"自我",sym:"◐",kw:"主体 · 认同 · 镜像"},
+  11:{name:"因果/逻辑",sym:"→",kw:"原因 · 推理 · 必然与可能"},12:{name:"同构",sym:"≅",kw:"映射 · 对应 · 结构"},
+  13:{name:"拓扑",sym:"∿",kw:"连续 · 变形 · 不变量"},14:{name:"肉质/元素",sym:"♥",kw:"身体 · 感知 · 质料 · 具身"},
+  15:{name:"场域/矩阵/结构",sym:"⊞",kw:"力场 · 位置 · 深层秩序"},16:{name:"畸变/奇点",sym:"✸",kw:"异常 · 临界 · 突变"},
+  17:{name:"事件",sym:"⚡",kw:"发生 · 涌现 · 断裂"},18:{name:"被动",sym:"☾",kw:"承受 · 接纳 · 他性"},
+  19:{name:"反身/反思",sym:"↩",kw:"自指 · 折返 · 凝视"},20:{name:"徒劳",sym:"∅",kw:"无用 · 枉然 · 西西弗"},
+  21:{name:"循环/反复",sym:"⊙",kw:"永恒回归 · 重复 · 轮回"},22:{name:"共生/依赖",sym:"⚭",kw:"互存 · 寄生 · 纠缠"},
+  23:{name:"回溯",sym:"◁",kw:"后见 · 重构 · 记忆"},24:{name:"缺失/过剩",sym:"□",kw:"空洞 · 溢出 · 匮乏与丰溢"},
+  25:{name:"献祭",sym:"△",kw:"牺牲 · 奉献 · 交换"},26:{name:"极限/限制",sym:"⊂",kw:"边界 · 约束 · 有限性"},
+  27:{name:"中心/本质",sym:"✙",kw:"核心 · 本质 · 缺席的在场"},28:{name:"悖论",sym:"⊗",kw:"矛盾 · 自毁 · 张力"},
+  29:{name:"死亡",sym:"✝",kw:"终结 · 有限性 · 向死而生"},30:{name:"道德/政治",sym:"⚖",kw:"善 · 义务 · 权力"},
+  31:{name:"时间/空间",sym:"⌛",kw:"绵延 · 当下 · 延伸"},32:{name:"灾异",sym:"☠",kw:"断裂 · 不可言说 · 绝境"},
+  33:{name:"神/空",sym:"☯",kw:"超越 · 空性 · 神圣"},34:{name:"折叠/隐藏",sym:"◫",kw:"潜在 · 皱褶 · 遮蔽"},
+  35:{name:"污染/腐蚀",sym:"☣",kw:"侵染 · 越界 · 他者化"},36:{name:"意义",sym:"◈",kw:"意指 · 价值 · 诠释"},
+  37:{name:"爱欲/美",sym:"≋",kw:"爱欲 · 美 · 驱力 · 向往"},38:{name:"视点/选择",sym:"◎",kw:"透视 · 决断 · 诠释框架"},
+  39:{name:"无限",sym:"∞",kw:"无穷 · 超越 · 绝对"},40:{name:"主客之隔",sym:"‖",kw:"主体 · 客体 · 认识论"},
+  41:{name:"可能性",sym:"◇",kw:"潜能 · 虚拟 · 尚未 · 开放"},42:{name:"起源",sym:"✦",kw:"起点 · 原初 · 涌现"},
+  43:{name:"抵抗/改革",sym:"⊻",kw:"反力 · 拒绝 · 裂缝 · 变革"},44:{name:"沉默",sym:"·",kw:"不可言说 · 边界 · 留白"},
+  45:{name:"遗忘",sym:"⌀",kw:"消散 · 解脱 · 生命力"},46:{name:"超越",sym:"↑",kw:"超出 · 彼岸 · 无限 · 他者"},
+  47:{name:"元概念",sym:"℧",kw:"自指 · 框架 · 关于概念的概念"},48:{name:"疯狂/失序",sym:"⊗",kw:"越界 · 理性他者 · 混乱"},
+  49:{name:"意向/投射",sym:"◎",kw:"朝向 · 意向性 · 投射 · 筹划"},50:{name:"博弈",sym:"⊛",kw:"策略 · 决策 · 理性选择"},
+  51:{name:"功能",sym:"f",kw:"运作 · 关系 · 系统作用"},52:{name:"含混",sym:"≈",kw:"模糊 · 灰色 · 不确定性"},
+  53:{name:"互文",sym:"⇌",kw:"引用 · 互涉 · 意义网络"},54:{name:"现象/表象",sym:"Φ",kw:"显现 · 涌现 · 看见的与未见的"},
+  55:{name:"功能",sym:"f",kw:"运作 · 关系 · 系统作用"}
+};
+
+const SPREAD_LAYOUTS = {
+  '双牌牌阵': 'linear', '三牌牌阵': 'linear', '五牌牌阵': 'linear',
+  '十字牌阵': 'cross', 'H 牌阵': 'h', '九宫格牌阵': '9'
+};
+const SPREAD_AREAS = {
+  '十字牌阵': ['ctr','top','bot','lft','rgt'],
+  'H 牌阵': ['a','b','c','e','d','f','g']
+};
+
+let selectedPlan = { coins: 10, price: 5 };
+
+function selectPlan(btn) {
+  document.querySelectorAll('.plan-btn').forEach(b => b.classList.remove('selected'));
+  btn.classList.add('selected');
+  selectedPlan = { coins: parseInt(btn.dataset.coins), price: parseInt(btn.dataset.price) };
+}
+
+async function doPay() {
+  document.getElementById('pay-msg').textContent = '支付功能开发中，请联系站长充值';
+}
+
+function doLogout() {
+  localStorage.removeItem('zb_token');
+  window.location.href = '/';
+}
+
+function formatDate(iso) {
+  const d = new Date(iso);
+  return `${d.getFullYear()}-${String(d.getMonth()+1).padStart(2,'0')}-${String(d.getDate()).padStart(2,'0')} ${String(d.getHours()).padStart(2,'0')}:${String(d.getMinutes()).padStart(2,'0')}`;
+}
+
+function makeHistCard(item) {
+  const card = CARDS_MAP[item.cardId];
+  if (!card) return '';
+  const rv = item.isReversed;
+  return `<div class="hist-card${rv?' reversed':''}" style="${item.area?'grid-area:'+item.area:''}">
+    <div class="hc-inner">
+      <div class="hc-pos">${item.position||''}</div>
+      <div class="hc-orient ${rv?'rv':'up'}">${rv?'逆位':'正位'}</div>
+      <div class="hc-sym">${card.sym}</div>
+      <div class="hc-name">${card.name}</div>
+      <div class="hc-kw">${card.kw}</div>
+    </div>
+  </div>`;
+}
+
+function renderCards(cardsJson, spreadName) {
+  const layout = SPREAD_LAYOUTS[spreadName] || 'linear';
+  const areas  = SPREAD_AREAS[spreadName] || [];
+  let className = 'spread-' + (layout === 'linear' ? 'linear' : layout);
+  const cardsWithArea = cardsJson.map((c, i) => ({ ...c, area: areas[i] || '' }));
+  return `<div class="${className}">${cardsWithArea.map(makeHistCard).join('')}</div>`;
+}
+
+function openDetail(r) {
+  document.getElementById('d-spread').textContent = r.spread_type;
+  document.getElementById('d-date').textContent = formatDate(r.created_at);
+  document.getElementById('d-question').textContent = r.question ? '「' + r.question + '」' : '';
+  document.getElementById('d-cards').innerHTML = renderCards(r.cards_json, r.spread_type);
+  document.getElementById('d-ai').textContent = r.ai_reading || '（无 AI 解读）';
+  document.getElementById('detail-modal').classList.add('active');
+}
+function closeDetail() {
+  document.getElementById('detail-modal').classList.remove('active');
+}
+
+async function loadProfile() {
+  const token = localStorage.getItem('zb_token');
+  if (!token) { window.location.href = '/login.html'; return; }
+
+  const meRes = await fetch('/api/user/me', { headers: { 'Authorization': 'Bearer ' + token } });
+  if (!meRes.ok) { localStorage.removeItem('zb_token'); window.location.href = '/login.html'; return; }
+  const me = await meRes.json();
+
+  document.getElementById('user-phone').textContent = me.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  document.getElementById('balance-num').textContent = me.coin_balance;
+
+  const listRes = await fetch('/api/readings/list', { headers: { 'Authorization': 'Bearer ' + token } });
+  const readings = await listRes.json();
+  const container = document.getElementById('history-list');
+
+  if (!readings || readings.length === 0) {
+    container.innerHTML = '<div class="empty-msg">还没有占卜记录</div>';
+    return;
+  }
+
+  container.innerHTML = readings.map(r => `
+    <div class="reading-item" onclick='openDetail(${JSON.stringify(r).replace(/'/g,"&#39;")})'>
+      <div class="reading-meta">
+        <span class="reading-spread">${r.spread_type}</span>
+        <span class="reading-date">${formatDate(r.created_at)}</span>
+      </div>
+      <div class="reading-question">${r.question ? r.question.slice(0,40) + (r.question.length>40?'…':'') : '（无问题描述）'}</div>
+    </div>
+  `).join('');
+}
+
+loadProfile();
+</script>
+</body>
+</html>
