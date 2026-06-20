@@ -219,7 +219,7 @@ body {
   <div class="card">
     <div class="card-title">✦ 占卜币余额 ✦</div>
     <div class="balance-num" id="balance-num">—</div>
-    <div class="balance-sub">每次 AI 解牌消耗 1 枚占卜币</div>
+    <div class="balance-sub">AI 解牌当前免费开放</div>
   </div>
 
   <!-- 充值 -->
@@ -244,6 +244,28 @@ body {
     </div>
     <button class="pay-btn" id="pay-btn" onclick="doPay()">立即充值</button>
     <div id="pay-msg" style="font-size:12px;color:#9a7848;text-align:center;margin-top:10px;min-height:18px;"></div>
+  </div>
+
+  <!-- 自定义 API Key -->
+  <div class="card">
+    <div class="card-title">✦ DeepSeek API Key ✦</div>
+    <div style="font-size:12px;color:#9a7848;margin-bottom:14px;line-height:1.7;">
+      填入你自己的 DeepSeek API Key，解牌时将使用你的账户额度。保存后无需重复填写，仅存储在本地浏览器中。
+    </div>
+    <input type="password" id="api-key-input"
+      placeholder="sk-xxxxxxxxxxxxxxxx"
+      style="width:100%;padding:10px 13px;border:1.5px solid rgba(139,105,20,.35);border-radius:8px;font-size:14px;font-family:monospace;background:rgba(255,252,240,.8);color:#2a1800;outline:none;box-sizing:border-box;" />
+    <div style="display:flex;gap:8px;margin-top:10px;">
+      <button onclick="saveApiKey()"
+        style="flex:1;background:linear-gradient(160deg,#9e4510,#7a2e05);color:#f8edd5;border:none;border-radius:8px;padding:10px;font-size:13px;font-family:inherit;cursor:pointer;letter-spacing:2px;">
+        保存
+      </button>
+      <button onclick="clearApiKey()"
+        style="background:transparent;border:1px solid rgba(139,105,20,.4);border-radius:8px;padding:10px 16px;font-size:13px;font-family:inherit;color:#9a7848;cursor:pointer;letter-spacing:1px;">
+        清除
+      </button>
+    </div>
+    <div id="api-key-msg" style="font-size:12px;text-align:center;margin-top:8px;min-height:18px;"></div>
   </div>
 
   <!-- 历史记录 -->
@@ -401,6 +423,33 @@ async function loadProfile() {
 }
 
 loadProfile();
+
+// API Key 管理
+(function initApiKey() {
+  const saved = localStorage.getItem('zb_apikey');
+  if (saved) document.getElementById('api-key-input').value = saved;
+})();
+
+function saveApiKey() {
+  const key = document.getElementById('api-key-input').value.trim();
+  const msg = document.getElementById('api-key-msg');
+  if (!key.startsWith('sk-')) {
+    msg.style.color = '#c03020';
+    msg.textContent = '格式不对，Key 应以 sk- 开头';
+    return;
+  }
+  localStorage.setItem('zb_apikey', key);
+  msg.style.color = '#4a7a1a';
+  msg.textContent = '已保存，下次解牌自动使用你的 Key';
+}
+
+function clearApiKey() {
+  localStorage.removeItem('zb_apikey');
+  document.getElementById('api-key-input').value = '';
+  const msg = document.getElementById('api-key-msg');
+  msg.style.color = '#9a7848';
+  msg.textContent = '已清除，将使用公共额度';
+}
 </script>
 </body>
 </html>

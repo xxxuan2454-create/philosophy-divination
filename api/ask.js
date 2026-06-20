@@ -3,17 +3,19 @@ module.exports = async function handler(req, res) {
     return res.status(405).json({ error: 'Method not allowed' });
   }
 
-  const { messages, max_tokens = 700, temperature = 0.85 } = req.body;
+  const { messages, max_tokens = 700, temperature = 0.85, apiKey } = req.body;
   if (!messages) {
     return res.status(400).json({ error: 'Missing messages' });
   }
+
+  const key = (apiKey && apiKey.startsWith('sk-')) ? apiKey : process.env.DEEPSEEK_API_KEY;
 
   try {
     const response = await fetch('https://api.deepseek.com/v1/chat/completions', {
       method: 'POST',
       headers: {
         'Content-Type': 'application/json',
-        'Authorization': 'Bearer ' + process.env.DEEPSEEK_API_KEY
+        'Authorization': 'Bearer ' + key
       },
       body: JSON.stringify({ model: 'deepseek-chat', messages, max_tokens, temperature })
     });

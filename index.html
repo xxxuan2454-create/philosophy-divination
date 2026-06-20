@@ -2153,6 +2153,7 @@ ${question}
 请结合这个牌阵的整体格局和哲学内核，给出一段有深度的综合占卜解读。`;
 
   try {
+    const userApiKey = localStorage.getItem('zb_apikey');
     const res = await fetch('/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
@@ -2160,7 +2161,8 @@ ${question}
         messages: [
           { role: 'system', content: systemPrompt },
           { role: 'user',   content: userPrompt }
-        ]
+        ],
+        ...(userApiKey ? { apiKey: userApiKey } : {})
       })
     });
 
