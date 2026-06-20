@@ -2152,9 +2152,9 @@ ${question}
 
 请结合这个牌阵的整体格局和哲学内核，给出一段有深度的综合占卜解读。`;
 
-  try {
-    const userApiKey = localStorage.getItem('zb_apikey');
-    const res = await fetch('/api/ask', {
+  async function callAskAPI(withUserKey) {
+    const userApiKey = withUserKey ? localStorage.getItem('zb_apikey') : null;
+    return fetch('/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
@@ -2165,6 +2165,17 @@ ${question}
         ...(userApiKey ? { apiKey: userApiKey } : {})
       })
     });
+  }
+
+  try {
+    let res = await callAskAPI(true);
+
+    // 用户 key 无效时自动清除并用内置 key 重试
+    if (res.status === 401 && localStorage.getItem('zb_apikey')) {
+      localStorage.removeItem('zb_apikey');
+      const keyInput = document.getElementById && document.querySelector && document.querySelector('#api-key-input');
+      res = await callAskAPI(false);
+    }
 
     if (!res.ok) throw new Error('API 错误 ' + res.status);
     const data = await res.json();
