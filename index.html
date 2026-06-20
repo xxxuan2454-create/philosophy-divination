@@ -2097,26 +2097,6 @@ async function askResAI() {
   const question = document.getElementById('res-ai-input').value.trim();
   if (!question) return;
 
-  // 登录检查
-  const token = localStorage.getItem('zb_token');
-  if (!token) {
-    showCoinModal('请先登录，才能使用 AI 解牌', '去登录', () => { window.location.href = '/login.html'; });
-    return;
-  }
-
-  // 余额检查
-  const meRes = await fetch('/api/user/me', { headers: { 'Authorization': 'Bearer ' + token } });
-  if (!meRes.ok) {
-    localStorage.removeItem('zb_token');
-    showCoinModal('登录已过期，请重新登录', '去登录', () => { window.location.href = '/login.html'; });
-    return;
-  }
-  const me = await meRes.json();
-  if (me.coin_balance < 1) {
-    showCoinModal('占卜币不足，每次 AI 解牌消耗 1 枚占卜币', '去充值', () => { window.location.href = '/profile.html'; });
-    return;
-  }
-
   const btn  = document.getElementById('res-ai-btn');
   const resp = document.getElementById('res-ai-response');
   btn.disabled = true;
@@ -2191,19 +2171,18 @@ ${question}
     resp.classList.add('visible');
     resp.scrollIntoView({ behavior: 'smooth', block: 'nearest' });
 
-    // 扣币 + 保存历史（静默）
-    const cardsJson = selectedOrder.map((cardIdx, i) => ({
-      cardId: CARDS[cardIdx].id, position: currentSpread.positions[i] || `第${i+1}张`, isReversed: !orientations[i]
-    }));
-    fetch('/api/readings/save', {
-      method: 'POST',
-      headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + localStorage.getItem('zb_token') },
-      body: JSON.stringify({ spreadType: currentSpread.name, question, cardsJson, aiReading: text })
-    }).then(r => r.json()).then(d => {
-      if (d.coinBalance !== undefined) {
-        document.getElementById('user-balance').textContent = d.coinBalance + ' 币';
-      }
-    }).catch(() => {});
+    // 保存历史（静默，仅登录用户）
+    const token = localStorage.getItem('zb_token');
+    if (token) {
+      const cardsJson = selectedOrder.map((cardIdx, i) => ({
+        cardId: CARDS[cardIdx].id, position: currentSpread.positions[i] || `第${i+1}张`, isReversed: !orientations[i]
+      }));
+      fetch('/api/readings/save', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json', 'Authorization': 'Bearer ' + token },
+        body: JSON.stringify({ spreadType: currentSpread.name, question, cardsJson, aiReading: text })
+      }).catch(() => {});
+    }
   } catch (err) {
     resp.textContent = '解读失败，请检查网络或 Key 是否正确。（' + err.message + '）';
     resp.classList.add('visible');
