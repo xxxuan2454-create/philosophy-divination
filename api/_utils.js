@@ -7,10 +7,7 @@ const JWT_SECRET   = process.env.JWT_SECRET || 'dev-secret';
 /* ── Supabase REST helpers ── */
 async function sbGet(path) {
   const res = await fetch(`${SUPABASE_URL}/rest/v1/${path}`, {
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'apikey': SUPABASE_KEY,
-    }
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY }
   });
   return res.json();
 }
@@ -46,17 +43,29 @@ async function sbPatch(table, filter, data) {
 async function sbDelete(table, filter) {
   await fetch(`${SUPABASE_URL}/rest/v1/${table}?${filter}`, {
     method: 'DELETE',
-    headers: {
-      'Authorization': `Bearer ${SUPABASE_KEY}`,
-      'apikey': SUPABASE_KEY,
-    }
+    headers: { 'Authorization': `Bearer ${SUPABASE_KEY}`, 'apikey': SUPABASE_KEY }
   });
 }
 
-/* ── JWT (HS256, no dependencies) ── */
-function b64url(str) {
-  return Buffer.from(str).toString('base64url');
+/* ── 密码哈希（scrypt，无需外部依赖）── */
+async function hashPassword(password) {
+  const salt = crypto.randomBytes(16).toString('hex');
+  const hash = await new Promise((resolve, reject) =>
+    crypto.scrypt(password, salt, 64, (err, key) => err ? reject(err) : resolve(key.toString('hex')))
+  );
+  return `${salt}:${hash}`;
 }
+
+async function verifyPassword(password, stored) {
+  const [salt, hash] = stored.split(':');
+  const hashToVerify = await new Promise((resolve, reject) =>
+    crypto.scrypt(password, salt, 64, (err, key) => err ? reject(err) : resolve(key.toString('hex')))
+  );
+  return crypto.timingSafeEqual(Buffer.from(hash, 'hex'), Buffer.from(hashToVerify, 'hex'));
+}
+
+/* ── JWT (HS256，无需外部依赖）── */
+function b64url(str) { return Buffer.from(str).toString('base64url'); }
 
 function signJWT(payload) {
   const header = b64url(JSON.stringify({ alg: 'HS256', typ: 'JWT' }));
@@ -74,45 +83,7 @@ function verifyJWT(token) {
 }
 
 function getToken(req) {
-  const auth = req.headers.authorization || '';
-  return auth.replace('Bearer ', '');
+  return (req.headers.authorization || '').replace('Bearer ', '');
 }
 
-/* ── 阿里云短信 ── */
-function encodeRFC3986(str) {
-  return encodeURIComponent(String(str)).replace(/[!'()*]/g, c => '%' + c.charCodeAt(0).toString(16).toUpperCase());
-}
-
-async function sendSMS(phone, code) {
-  if (!process.env.ALIYUN_SMS_ACCESS_KEY) {
-    console.log(`[DEV] 验证码 ${phone}: ${code}`);
-    return;
-  }
-  const params = {
-    AccessKeyId:      process.env.ALIYUN_SMS_ACCESS_KEY,
-    Action:           'SendSms',
-    Format:           'JSON',
-    PhoneNumbers:     phone,
-    SignName:         process.env.ALIYUN_SMS_SIGN,
-    SignatureMethod:  'HMAC-SHA1',
-    SignatureNonce:   crypto.randomUUID(),
-    SignatureVersion: '1.0',
-    TemplateCode:     process.env.ALIYUN_SMS_TEMPLATE,
-    TemplateParam:    JSON.stringify({ code }),
-    Timestamp:        new Date().toISOString().replace(/\.\d{3}Z$/, 'Z'),
-    Version:          '2017-05-25',
-  };
-  const qs = Object.keys(params).sort().map(k => `${encodeRFC3986(k)}=${encodeRFC3986(params[k])}`).join('&');
-  const str = `POST&${encodeRFC3986('/')}&${encodeRFC3986(qs)}`;
-  params.Signature = crypto.createHmac('sha1', process.env.ALIYUN_SMS_SECRET + '&').update(str).digest('base64');
-  const body = new URLSearchParams(params).toString();
-  const res = await fetch('https://dysmsapi.aliyuncs.com/', {
-    method: 'POST',
-    headers: { 'Content-Type': 'application/x-www-form-urlencoded' },
-    body
-  });
-  const result = await res.json();
-  if (result.Code !== 'OK') throw new Error(`SMS: ${result.Message}`);
-}
-
-module.exports = { sbGet, sbPost, sbPatch, sbDelete, signJWT, verifyJWT, getToken, sendSMS };
+module.exports = { sbGet, sbPost, sbPatch, sbDelete, hashPassword, verifyPassword, signJWT, verifyJWT, getToken };

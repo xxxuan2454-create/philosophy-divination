@@ -377,7 +377,7 @@ async function loadProfile() {
   if (!meRes.ok) { localStorage.removeItem('zb_token'); window.location.href = '/login.html'; return; }
   const me = await meRes.json();
 
-  document.getElementById('user-phone').textContent = me.phone.replace(/(\d{3})\d{4}(\d{4})/, '$1****$2');
+  document.getElementById('user-phone').textContent = me.email;
   document.getElementById('balance-num').textContent = me.coin_balance;
 
   const listRes = await fetch('/api/readings/list', { headers: { 'Authorization': 'Bearer ' + token } });
