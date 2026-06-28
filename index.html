@@ -449,7 +449,7 @@ body {
 #results-overlay {
   display: none;
   position: fixed; inset: 0;
-  background: rgba(20, 10, 0, 0.97);
+  background: rgba(20, 10, 0, 0.88);
   z-index: 200;
   overflow-y: auto;
   padding: 36px 20px 50px;
@@ -708,7 +708,7 @@ body {
 
 /* Extra card section */
 .extra-section { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.extra-label   { color: #c8a040; font-size: 11px; letter-spacing: 3px; font-family: sans-serif; }
+.extra-label   { color: #c8a040; font-size: 11px; letter-spacing: 3px; font-family: sans-serif; text-align: center; width: 100%; }
 
 /* ══════════════════════════════════════
    CARD DETAIL MODAL
@@ -2033,7 +2033,7 @@ function onExtraCardClick(el, cardIdx) {
   label.className = 'extra-label';
   label.textContent = '◆  额外洞见  ◆';
   result.appendChild(label);
-  result.appendChild(makeResultWrap(extraCardIdx, '额外洞见', extraOrient, 0));
+  result.appendChild(makeResultWrap(extraCardIdx, '', extraOrient, 0));
 }
 
 /* ═══════════════════════════════════════════════════════
