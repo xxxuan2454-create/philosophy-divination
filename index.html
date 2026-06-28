@@ -708,7 +708,7 @@ body {
 
 /* Extra card section */
 .extra-section { margin-top: 20px; display: flex; flex-direction: column; align-items: center; gap: 10px; }
-.extra-label   { color: #c8a040; font-size: 11px; letter-spacing: 3px; font-family: sans-serif; text-align: center; width: 100%; }
+.extra-label   { color: #c8a040; font-size: 11px; letter-spacing: 3px; font-family: sans-serif; }
 
 /* ══════════════════════════════════════
    CARD DETAIL MODAL
@@ -1132,6 +1132,7 @@ body {
   <div id="spread-display"></div>
   <div id="extra-section" style="display:none">
     <div class="ornament" style="margin-top:20px">· · ·</div>
+    <div class="extra-label">◆  额外洞见  ◆</div>
     <div id="extra-result"></div>
   </div>
 
@@ -2029,10 +2030,6 @@ function onExtraCardClick(el, cardIdx) {
 
   const result = document.getElementById('extra-result');
   result.innerHTML = '';
-  const label = document.createElement('div');
-  label.className = 'extra-label';
-  label.textContent = '◆  额外洞见  ◆';
-  result.appendChild(label);
   result.appendChild(makeResultWrap(extraCardIdx, '', extraOrient, 0));
 }
 
