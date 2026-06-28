@@ -2412,7 +2412,7 @@ function showAllCards() {
   const grid = document.getElementById('cards-browser-grid');
   if (grid.children.length > 0) return; // already built
 
-  CARDS.forEach(card => {
+  CARDS.forEach((card, idx) => {
     const el = document.createElement('div');
     el.className = 'browser-card';
     el.innerHTML = `
@@ -2422,7 +2422,7 @@ function showAllCards() {
       ${card.sub ? `<div class="bc-sub">${card.sub}</div>` : ''}
       <div class="bc-kw">${card.kw}</div>
       <div class="bc-hint">${card.hint}</div>`;
-    el.addEventListener('click', () => openModal(card.id - 1, card.name, true));
+    el.addEventListener('click', () => openModal(idx, card.name, true));
     grid.appendChild(el);
   });
 }
