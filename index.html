@@ -1238,6 +1238,8 @@ const CARDS = [
   { id:57, name:"离散/收敛",   sub:"Dissémination / Convergence",  sym:"⋱",  kw:"扩散 · 聚合 · 去中心 · 播撒 · 块茎",         hint:"离散不是瓦解，而是另一种聚集的方式" },
   { id:58, name:"分离/排斥",   sub:"L'Abject",                     sym:"⊘",  kw:"卑贱 · 边界崩塌 · 他者 · 恐惧 · 排出",       hint:"令我恐惧和厌恶的，曾是我自身的一部分" },
   { id:59, name:"压抑",        sub:"Refoulement",                  sym:"▽",  kw:"压制 · 无意识 · 回归 · 症状 · 遗忘的记忆",   hint:"被压抑的从不消失，它以变形的面目归来" },
+  { id:60, name:"谱系/历史",   sub:"Généalogie / Histoire",        sym:"⌖",  kw:"起源 · 传承 · 权力谱系 · 解构永恒 · 价值的历史性", hint:"一切'自然'都有其历史，一切'永恒'都有其起源" },
+  { id:61, name:"礼物/债务",   sub:"Don / Dette",                  sym:"⇌",  kw:"给予 · 互惠 · 义务 · 不可能性 · 过剩 · 感恩",    hint:"真正的礼物不求回报，但馈赠本身已悄然创造了债" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -1751,6 +1753,22 @@ const LORE = {
       { name: "雅克·拉康", era: "法国，20世纪", text: `"无意识像语言一样被结构"——压抑是能指（signifiant）层面的操作：被压抑的不是某个内容，而是某个能指被推入链条之下；症状是被压抑能指的回归，以隐喻的形式重新出现；主体是分裂的：意识中的"我"永远只是无意识欲望在象征秩序中留下的代理。` },
       { name: "赫伯特·马尔库塞", era: "德国/美国，20世纪", text: `《爱欲与文明》——文明要求对原始欲望的压抑（弗洛伊德），但马尔库塞区分了基本压抑（文明必要的限制）与额外压抑（服务于统治的压制）；压抑性去升华（repressive desublimation）：当代消费社会允许表面上的性解放，实则是把欲望纳入商品逻辑，使真正的解放能量被去势。` }
     ]
+  },
+  60: {
+    divination: `你正在追问的东西，也许有着你尚未追溯到的来源。谱系学告诉我们：没有什么是"本来如此"的，价值、规范、身份，都是在特定历史条件下被生产出来的。这张牌邀请你向后看——不是为了寻找确定的起点，而是为了松动那些看起来理所当然的东西。你现在持有的信念，是谁给你的？`,
+    philosophers: [
+      { name: "弗里德里希·尼采", era: "德国，19世纪", text: `《道德的谱系》（Zur Genealogie der Moral，1887）——善与恶的道德概念不是永恒真理，而是权力关系的历史产物；"善"最初是贵族对自身的肯定，"恶"是弱者对强者的怨恨（ressentiment）的翻转；谱系学揭示：道德的历史是掩盖权力意志的修辞史。` },
+      { name: "米歇尔·福柯", era: "法国，20世纪", text: `谱系学作为方法——不寻找起源（Ursprung）的纯粹性，而是追踪"出现"（Entstehung）的偶然性与权力运作；《规训与惩罚》《性经验史》以谱系学揭示：现代理性、正常/异常的区分、主体性本身，都是在具体历史权力关系中被构造出来的，并非自然事实。` },
+      { name: "瓦尔特·本雅明", era: "德国，20世纪", text: `历史天使（Angelus Novus）——历史不是进步的叙事，而是灾难的碎片堆积；"历史唯物主义者"的任务是逆着历史的"自然"流向，从被压制者的角度"刷新"过去；每一个"现在"都是过去某个压制时刻突然点燃的救赎可能性。` }
+    ]
+  },
+  61: {
+    divination: `你现在处于一个给予与接受的张力之中吗？礼物从不是单纯的慷慨——馈赠同时携带着义务与权力；德里达追问：如果礼物被认出，它就已经不再是礼物了。此刻，你是在给予什么，还是感到某种无法言明的债务压迫着你？真正的给予，是否可能？`,
+    philosophers: [
+      { name: "马塞尔·莫斯", era: "法国，20世纪", text: `《礼物》（Essai sur le don，1925）——礼物从不是"自由"的：馈赠、接受、回馈构成三重义务体系；表面上的慷慨之下运作着社会纽带与权力关系；波利尼西亚的"豪"（hau）揭示礼物携带着给予者的灵力，必须流通而不能停滞——债务是社会运转的隐秘引擎。` },
+      { name: "雅克·德里达", era: "法国/阿尔及利亚，20世纪", text: `《给予时间》（Donner le temps，1991）——真正的礼物是不可能的：一旦礼物被认出是礼物，接受者便产生了回报的义务，礼物已进入交换循环而自我取消；礼物必须无名、无意识、无记忆——它只能在自身消失的瞬间存在；这个悖论揭示了慷慨与经济之间不可跨越的深渊。` },
+      { name: "乔治·巴塔耶", era: "法国，20世纪", text: `普遍经济学与耗费（dépense）——经济的真正逻辑不是积累而是过剩的耗费；夸富宴（potlatch）通过炫耀性的大规模馈赠与破坏建立声望与权力；礼物在巴塔耶这里是对有用性原则的僭越，是对死亡与无用的肯定——真正的给予是不留存任何的燃烧。` }
+    ]
   }
 };
 
@@ -1826,7 +1844,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(59).keys()]);
+  shuffledDeck    = shuffle([...Array(61).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
@@ -2294,7 +2312,7 @@ function startInfinite() {
   infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
-  shuffledDeck   = shuffle([...Array(59).keys()]);
+  shuffledDeck   = shuffle([...Array(61).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
