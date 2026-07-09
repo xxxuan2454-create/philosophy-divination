@@ -2209,7 +2209,7 @@ ${question}
 
   async function callAskAPI(withUserKey) {
     const userApiKey = withUserKey ? localStorage.getItem('zb_apikey') : null;
-    return fetch('/api/ask', {
+    return fetch('https://philosophy-divination.vercel.app/api/ask', {
       method: 'POST',
       headers: { 'Content-Type': 'application/json' },
       body: JSON.stringify({
