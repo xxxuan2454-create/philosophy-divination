@@ -1240,6 +1240,7 @@ const CARDS = [
   { id:59, name:"压抑",        sub:"Refoulement",                  sym:"▽",  kw:"压制 · 无意识 · 回归 · 症状 · 遗忘的记忆",   hint:"被压抑的从不消失，它以变形的面目归来" },
   { id:60, name:"谱系/历史",   sub:"Généalogie / Histoire",        sym:"⌖",  kw:"起源 · 传承 · 权力谱系 · 解构永恒 · 价值的历史性", hint:"一切'自然'都有其历史，一切'永恒'都有其起源" },
   { id:61, name:"礼物/债务",   sub:"Don / Dette",                  sym:"⇌",  kw:"给予 · 互惠 · 义务 · 不可能性 · 过剩 · 感恩",    hint:"真正的礼物不求回报，但馈赠本身已悄然创造了债" },
+  { id:62, name:"宿命",       sub:"Fatum / Destiny",             sym:"≣",  kw:"命运 · 必然 · 自由 · 承受 · 爱命运",          hint:"宿命不是枷锁，而是你必须在其中做出选择的材料" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -1769,6 +1770,15 @@ const LORE = {
       { name: "雅克·德里达", era: "法国/阿尔及利亚，20世纪", text: `《给予时间》（Donner le temps，1991）——真正的礼物是不可能的：一旦礼物被认出是礼物，接受者便产生了回报的义务，礼物已进入交换循环而自我取消；礼物必须无名、无意识、无记忆——它只能在自身消失的瞬间存在；这个悖论揭示了慷慨与经济之间不可跨越的深渊。` },
       { name: "乔治·巴塔耶", era: "法国，20世纪", text: `普遍经济学与耗费（dépense）——经济的真正逻辑不是积累而是过剩的耗费；夸富宴（potlatch）通过炫耀性的大规模馈赠与破坏建立声望与权力；礼物在巴塔耶这里是对有用性原则的僭越，是对死亡与无用的肯定——真正的给予是不留存任何的燃烧。` }
     ]
+  },
+  62: {
+    divination: `你感到有一种更大的力量在牵引着你吗？宿命不是枷锁，而是你必须面对并做出回应的那些给定条件。尼采说：爱你的命运（amor fati）——不是消极地接受，而是热爱它、把它变成你自己的意志。此刻，你面对的处境也许是命运给你的材料，但如何使用这些材料，始终是你的选择。`,
+    philosophers: [
+      { name: "弗里德里希·尼采", era: "德国，19世纪", text: `"命运之爱"（Amor Fati）——最高的肯定不是忍受命运，而是爱上它：把每一个"它曾是那样"转化为"我愿它如此"，在必然性中找到自由。永恒轮回是最沉重的思想实验：如果你所做的一切将无限次重复，你是否能对它说出"是"？宿命在尼采这里不是被动的服从，而是主动的肯定——将必然转化为意志的表达。` },
+      { name: "斯多葛学派", era: "古希腊/罗马，公元前3世纪-公元2世纪", text: `命运（Heimarmene）是贯穿宇宙的理性秩序——智者不是反抗它，而是理解并顺应它。爱比克泰德说："不要要求事情如你所愿，而要愿你的事情如它所是。"塞涅卡说："命运引导愿意的人，拖拽不愿意的人。"宿命在斯多葛这里不是放弃自由，而是在必然的框架内发现内在自由的不可侵犯。` },
+      { name: "波爱修斯", era: "罗马，6世纪", text: `《哲学的慰藉》——命运之轮（Rota Fortunae）不断转动，将人从巅峰掷入谷底、又从谷底提升；真正的幸福不依赖于命运的恩赐，而在于与永恒的神意（Providentia）保持一致。宿命与自由意志的悖论：神的预知并不取消人的自由，因为神在永恒的现在中同时看见一切时间中的选择。` },
+      { name: "庄子", era: "中国，约公元前4世纪", text: `"知其不可奈何而安之若命"——真正的自由不是对抗命运，而是在认识到某些极限后，找到一种与之共处的方式。庄子的"命"不是外在的强制，而是事物自然展开的内在节律；顺应不等于屈服，而是不再以对抗消耗自己，转而将能量投向真正可以改变的事物。` }
+    ]
   }
 };
 
@@ -1844,7 +1854,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(61).keys()]);
+  shuffledDeck    = shuffle([...Array(62).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
@@ -2312,7 +2322,7 @@ function startInfinite() {
   infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
-  shuffledDeck   = shuffle([...Array(61).keys()]);
+  shuffledDeck   = shuffle([...Array(62).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
@@ -2341,7 +2351,7 @@ function drawInfiniteCard(el, cardIdx) {
   // Pick a truly random card each click, different from the last drawn
   const lastIdx = infiniteDrawn.length > 0 ? infiniteDrawn[infiniteDrawn.length - 1].cardIdx : -1;
   let newIdx;
-  do { newIdx = Math.floor(Math.random() * 54); } while (newIdx === lastIdx);
+  do { newIdx = Math.floor(Math.random() * 62); } while (newIdx === lastIdx);
   cardIdx = newIdx;
 
   const isUpright = Math.random() > 0.35;
