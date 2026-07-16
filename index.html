@@ -1068,7 +1068,7 @@ body {
       </button>
       <button class="spread-btn" onclick="showAllCards()" style="grid-column: 1 / -1; background: transparent; border: 1px dashed rgba(180,148,70,.4); color:#9a7848;">
         <span class="sname" style="font-weight:normal; font-size:14px; letter-spacing:3px; color:#7a6038;">全部卡牌</span>
-        <span class="sdesc">浏览六十一张哲学牌的完整含义</span>
+        <span class="sdesc">浏览六十二张哲学牌的完整含义</span>
       </button>
     </div>
   </div>
@@ -1240,6 +1240,7 @@ const CARDS = [
   { id:59, name:"谱系/历史",   sub:"Généalogie / Histoire",        sym:"⌖",  kw:"起源 · 传承 · 权力谱系 · 解构永恒 · 价值的历史性", hint:"一切'自然'都有其历史，一切'永恒'都有其起源" },
   { id:60, name:"礼物/债务",   sub:"Don / Dette",                  sym:"⇌",  kw:"给予 · 互惠 · 义务 · 不可能性 · 过剩 · 感恩",    hint:"真正的礼物不求回报，但馈赠本身已悄然创造了债" },
   { id:61, name:"宿命",       sub:"Fatum / Destiny",             sym:"≣",  kw:"命运 · 必然 · 自由 · 承受 · 爱命运",          hint:"宿命不是枷锁，而是你必须在其中做出选择的材料" },
+  { id:62, name:"断裂",       sub:"Rupture / Break",               sym:"⧸",  kw:"断裂 · 中断 · 深渊 · 跃迁 · 置之死地",      hint:"断裂之处，正是新的开始潜入的缝隙" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -1770,6 +1771,15 @@ const LORE = {
       { name: "波爱修斯", era: "罗马，6世纪", text: `《哲学的慰藉》——命运之轮（Rota Fortunae）不断转动，将人从巅峰掷入谷底、又从谷底提升；真正的幸福不依赖于命运的恩赐，而在于与永恒的神意（Providentia）保持一致。宿命与自由意志的悖论：神的预知并不取消人的自由，因为神在永恒的现在中同时看见一切时间中的选择。` },
       { name: "庄子", era: "中国，约公元前4世纪", text: `"知其不可奈何而安之若命"——真正的自由不是对抗命运，而是在认识到某些极限后，找到一种与之共处的方式。庄子的"命"不是外在的强制，而是事物自然展开的内在节律；顺应不等于屈服，而是不再以对抗消耗自己，转而将能量投向真正可以改变的事物。` }
     ]
+  },
+  62: {
+    divination: `你正在经历一次断裂。旧有的连续性已被打破，曾经熟悉的路径不再可行。这不是失败——断裂是结构自身在临界点上的重组前奏。海德格尔说：深渊也是地基。巴迪欧说：真理始于一次断裂。此刻，不要急于修补那个裂缝，先在裂缝中停留片刻——它在告诉你什么？`,
+    philosophers: [
+      { name: "阿兰·巴迪欧", era: "法国，20-21世纪", text: `《存在与事件》——真理不是知识的累积，而是始于一次断裂（rupture）：某个事件打破了既有情势的计数规则，迫使主体在忠诚于事件的过程中重新构建一切。断裂不是破坏，而是新秩序的诞生条件；没有断裂，就没有真正的创造。` },
+      { name: "马丁·海德格尔", era: "德国，20世纪", text: `"深渊"（Abgrund）的字面意思是"地基的缺失"——但海德格尔指出，深渊并非虚无，而是存在在撤去一切现成地基之后的自行敞开。断裂之处，正是存在不再被现成概念所遮蔽、重新显现自身的契机。` },
+      { name: "米歇尔·福柯", era: "法国，20世纪", text: `《知识考古学》——历史的连续性是一种幻觉，知识型的转换是突然的断裂（coupure）；从一个时代的知识型到另一个，不是平滑的过渡，而是规则的突然更替。断裂不是历史的例外，而是历史真正的运动方式。` },
+      { name: "吉尔·德勒兹", era: "法国，20世纪", text: `逃逸线（ligne de fuite）——在看似坚固的结构中总有裂缝，真正的创造不是修补裂缝，而是沿着裂缝逃逸出去，生成全新的装配（agencement）。断裂是绝对的解域化：一切坐标失效之时，也正是全新的地图开始绘制之时。` }
+    ]
   }
 };
 
@@ -1845,7 +1855,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(61).keys()]);
+  shuffledDeck    = shuffle([...Array(62).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
@@ -2313,7 +2323,7 @@ function startInfinite() {
   infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
-  shuffledDeck   = shuffle([...Array(61).keys()]);
+  shuffledDeck   = shuffle([...Array(62).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
@@ -2342,7 +2352,7 @@ function drawInfiniteCard(el, cardIdx) {
   // Pick a truly random card each click, different from the last drawn
   const lastIdx = infiniteDrawn.length > 0 ? infiniteDrawn[infiniteDrawn.length - 1].cardIdx : -1;
   let newIdx;
-  do { newIdx = Math.floor(Math.random() * 61); } while (newIdx === lastIdx);
+  do { newIdx = Math.floor(Math.random() * 62); } while (newIdx === lastIdx);
   cardIdx = newIdx;
 
   const isUpright = Math.random() > 0.35;
