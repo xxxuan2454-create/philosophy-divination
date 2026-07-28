@@ -1068,7 +1068,7 @@ body {
       </button>
       <button class="spread-btn" onclick="showAllCards()" style="grid-column: 1 / -1; background: transparent; border: 1px dashed rgba(180,148,70,.4); color:#9a7848;">
         <span class="sname" style="font-weight:normal; font-size:14px; letter-spacing:3px; color:#7a6038;">全部卡牌</span>
-        <span class="sdesc">浏览六十二张哲学牌的完整含义</span>
+        <span class="sdesc">浏览六十三张哲学牌的完整含义</span>
       </button>
     </div>
   </div>
@@ -1241,6 +1241,7 @@ const CARDS = [
   { id:60, name:"礼物/债务",   sub:"Don / Dette",                  sym:"⇌",  kw:"给予 · 互惠 · 义务 · 不可能性 · 过剩 · 感恩",    hint:"真正的礼物不求回报，但馈赠本身已悄然创造了债" },
   { id:61, name:"宿命",       sub:"Fatum / Destiny",             sym:"≣",  kw:"命运 · 必然 · 自由 · 承受 · 爱命运",          hint:"宿命不是枷锁，而是你必须在其中做出选择的材料" },
   { id:62, name:"断裂/失效",   sub:"Rupture / Break",               sym:"⧸",  kw:"断裂 · 中断 · 深渊 · 跃迁 · 置之死地",      hint:"断裂之处，正是新的开始潜入的缝隙" },
+  { id:63, name:"咒语/幽灵",   sub:"Incantation / Hauntology",      sym:"≬",  kw:"咒语 · 幽灵 · 萦绕 · 不在场的在场 · 召唤",    hint:"逝去之物从未真正离开，它在每一个当下低语" },
 ];
 
 /* ═══════════════════════════════════════════════════════
@@ -1781,6 +1782,15 @@ const LORE = {
       { name: "米歇尔·福柯", era: "法国，20世纪", text: `《知识考古学》——历史的连续性是一种幻觉，知识型的转换是突然的断裂（coupure）；从一个时代的知识型到另一个，不是平滑的过渡，而是规则的突然更替。断裂不是历史的例外，而是历史真正的运动方式。` },
       { name: "吉尔·德勒兹", era: "法国，20世纪", text: `逃逸线（ligne de fuite）——在看似坚固的结构中总有裂缝，真正的创造不是修补裂缝，而是沿着裂缝逃逸出去，生成全新的装配（agencement）。断裂是绝对的解域化：一切坐标失效之时，也正是全新的地图开始绘制之时。` }
     ]
+  },
+  63: {
+    divination: `有些东西已经过去了，却从未离开。德里达说：幽灵永远不在场，却又永远已经归来。咒语不召唤真实的事物，它召唤曾经存在、或从未存在、却始终萦绕于我们的事物。这张牌邀请你去听见那些在你当下处境中低语的"幽灵"——旧日的选择、被遗忘的希望、被压抑的恐惧——它们在某种意义上，比在场者更真实。`,
+    philosophers: [
+      { name: "雅克·德里达", era: "法国/阿尔及利亚，20世纪", text: `《马克思的幽灵》（Spectres de Marx，1993）提出"幽灵学"（Hauntology）——幽灵既不在场也不缺席，它萦绕在存在与不在之间，打破本体论（ontology）的确定性。每一个当下都被过去的幽灵和未来的幽灵所缠绕，正义永远是对幽灵的回应。"学会与幽灵一起生活"是伦理的根本责任。` },
+      { name: "西格蒙德·弗洛伊德", era: "奥地利，19-20世纪", text: `《哀悼与忧郁症》——被压抑之物从不真正消散，它以幽灵的形式反复回归，在症状、梦与重复中低语。哀悼的工作就是学习如何与失去的对象的幽灵共存，而非彻底"驱除"它。幽灵不是需要消灭的敌人，而是需要被倾听的使者。` },
+      { name: "弗里德里希·尼采", era: "德国，19世纪", text: `《朝霞》——旧日的"诸神"已死，但它们的阴影仍在。道德、价值、信仰的更新不是一次性断裂，而是旧神幽灵与新神胚芽的纠缠；新价值需要在旧价值的废墟与幽灵中生长。咒语是永劫回归的声音：你曾经选择过的一切，将永恒地被选择，这就是幽灵的力量。` },
+      { name: "老子", era: "中国，约公元前6世纪", text: `"谷神不死，是谓玄牝"——空虚（谷）之中有一种不死的力量在运作，它像幽灵一样既虚又实，既无又有。道生万物，但万物消散后又归于道——所有逝去的都在道中留下踪迹，成为无可名状的"幽灵"之存。咒语在东方传统中不是为了控制，而是为了与那些不可见的力量共振。` }
+    ]
   }
 };
 
@@ -1856,7 +1866,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(62).keys()]);
+  shuffledDeck    = shuffle([...Array(63).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
@@ -2324,7 +2334,7 @@ function startInfinite() {
   infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
-  shuffledDeck   = shuffle([...Array(62).keys()]);
+  shuffledDeck   = shuffle([...Array(63).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
@@ -2353,7 +2363,7 @@ function drawInfiniteCard(el, cardIdx) {
   // Pick a truly random card each click, different from the last drawn
   const lastIdx = infiniteDrawn.length > 0 ? infiniteDrawn[infiniteDrawn.length - 1].cardIdx : -1;
   let newIdx;
-  do { newIdx = Math.floor(Math.random() * 62); } while (newIdx === lastIdx);
+  do { newIdx = Math.floor(Math.random() * 63); } while (newIdx === lastIdx);
   cardIdx = newIdx;
 
   const isUpright = Math.random() > 0.35;
