@@ -1412,7 +1412,7 @@ const CARDS = [
   // 原 #57「分离/排斥」已合并至 #5「分裂/排斥」
   { id:57, name:"压抑",        sub:"Refoulement",                  sym:"▽",  kw:"压制 · 无意识 · 回归 · 症状 · 遗忘的记忆",   hint:"被压抑的从不消失，它以变形的面目归来" },
   { id:58, name:"谱系/历史",   sub:"Généalogie / Histoire",        sym:"⌖",  kw:"起源 · 传承 · 权力谱系 · 解构永恒 · 价值的历史性", hint:"一切'自然'都有其历史，一切'永恒'都有其起源" },
-  { id:59, name:"礼物/债务",   sub:"Don / Dette",                  sym:"⇌",  kw:"给予 · 互惠 · 义务 · 不可能性 · 过剩 · 感恩",    hint:"真正的礼物不求回报，但馈赠本身已悄然创造了债" },
+  { id:59, name:"礼物/债务/交换", sub:"Don / Dette / Échange",        sym:"⇄",  kw:"给予 · 互惠 · 义务 · 流转 · 市场 · 耗费",        hint:"一切关系都在交换中形成：没有纯粹的给予，也没有纯粹的索取" },
   { id:60, name:"宿命",       sub:"Fatum / Destiny",             sym:"≣",  kw:"命运 · 必然 · 自由 · 承受 · 爱命运",          hint:"宿命不是枷锁，而是你必须在其中做出选择的材料" },
   { id:61, name:"断裂/失效",   sub:"Rupture / Break",               sym:"⧸",  kw:"断裂 · 中断 · 深渊 · 跃迁 · 置之死地",      hint:"断裂之处，正是新的开始潜入的缝隙" },
   { id:62, name:"咒语/幽灵",   sub:"Incantation / Hauntology",      sym:"≬",  kw:"咒语 · 幽灵 · 萦绕 · 不在场的在场 · 召唤",    hint:"逝去之物从未真正离开，它在每一个当下低语" },
@@ -1926,11 +1926,12 @@ const LORE = {
     ]
   },
   59: {
-    divination: `你现在处于一个给予与接受的张力之中吗？礼物从不是单纯的慷慨——馈赠同时携带着义务与权力；德里达追问：如果礼物被认出，它就已经不再是礼物了。此刻，你是在给予什么，还是感到某种无法言明的债务压迫着你？真正的给予，是否可能？`,
+    divination: `你现在处于一个给予、接受与交换的动态之中。礼物从不是单纯的慷慨——莫斯说它携带着给予者的"豪"，接受者不得安宁，必须回馈；交换也不是冰冷的交易——如易经所言，天地交而万物通。在馈赠义务与交换本能之间，你站在哪里？此刻，你是在真诚地给予，还是在暗暗计算？你的"慷慨"是否在期待回报？还是你正被困在某种不平等的交换中，积累着看不见的债务？真正的交换不是物与物的对等，而是灵魂与灵魂的相遇。`,
     philosophers: [
-      { name: "马塞尔·莫斯", era: "法国，20世纪", text: `《礼物》（Essai sur le don，1925）——礼物从不是"自由"的：馈赠、接受、回馈构成三重义务体系；表面上的慷慨之下运作着社会纽带与权力关系；波利尼西亚的"豪"（hau）揭示礼物携带着给予者的灵力，必须流通而不能停滞——债务是社会运转的隐秘引擎。` },
-      { name: "雅克·德里达", era: "法国/阿尔及利亚，20世纪", text: `《给予时间》（Donner le temps，1991）——真正的礼物是不可能的：一旦礼物被认出是礼物，接受者便产生了回报的义务，礼物已进入交换循环而自我取消；礼物必须无名、无意识、无记忆——它只能在自身消失的瞬间存在；这个悖论揭示了慷慨与经济之间不可跨越的深渊。` },
-      { name: "乔治·巴塔耶", era: "法国，20世纪", text: `普遍经济学与耗费（dépense）——经济的真正逻辑不是积累而是过剩的耗费；夸富宴（potlatch）通过炫耀性的大规模馈赠与破坏建立声望与权力；礼物在巴塔耶这里是对有用性原则的僭越，是对死亡与无用的肯定——真正的给予是不留存任何的燃烧。` }
+      { name: "马塞尔·莫斯", era: "法国，20世纪", text: `《礼物》（Essai sur le don，1925）——礼物从来不是"自由"与"无偿"的。馈赠、接受、回赠构成三重义务体系，社会纽带正是在这种循环中编织而成。波利尼西亚的"豪"（hau）揭示礼物携带着给予者的灵力，必须流通而不能停滞——债务是社会运转的隐秘引擎。交换不是纯粹的经济行为，而是"总体性的社会事实"：法律、道德、宗教、经济、美学在其中相互缠绕。` },
+      { name: "雅克·德里达", era: "法国/阿尔及利亚，20世纪", text: `《给予时间》——真正的礼物是不可能的：一旦礼物被认出是礼物，接受者便产生了回报的义务，礼物已进入交换循环而自我取消；礼物必须无名、无意识、无记忆——它只能在自身消失的瞬间存在。这个悖论揭示了慷慨与交换之间不可跨越的深渊：我们以为自己在给予，但其实每一次给予都已经落入了交换的逻辑。` },
+      { name: "易经", era: "中国，约公元前1000年", text: `"天地交而万物通也，上下交而其志同也"——《泰卦》揭示交换与交通是宇宙的根本节律。乾坤交错生出八卦，阴阳交感而生万物。《易传·系辞》曰"日中为市，致天下之民，聚天下之货，交易而退，各得其所"——交换不仅是经济活动，更是天人合一、人与人相通的宇宙论实践。圣人以"通"为德：流通不畅则万物皆滞，公平交换则天下和谐。` },
+      { name: "亚当·斯密", era: "苏格兰，18世纪", text: `《国富论》——交换是人类区别于动物的天然倾向。"无人见过两只狗公平地交换一根骨头。"正是交换的倾向催生了分工，分工又产生了财富的增长。每个人追求自身利益，却在"看不见的手"的引导下实现了社会整体的繁荣。但斯密同时在《道德情操论》中追问：同情心如何与自利相协调？一个纯粹的交换社会能否维系其道德纽带？` }
     ]
   },
   60: {
@@ -2034,7 +2035,7 @@ function startSpread(type) {
   extraOrient     = true;
   phase           = 'drawing';
   waitingForExtra = false;
-  shuffledDeck    = shuffle([...Array(62).keys()]);
+  shuffledDeck    = shuffle([...Array(CARDS.length).keys()]);
 
   // Switch screens
   document.getElementById('screen-spread').classList.remove('active');
@@ -2502,7 +2503,7 @@ function startInfinite() {
   infiniteDrawn  = [];
   isInfiniteMode = true;
   phase          = 'drawing';
-  shuffledDeck   = shuffle([...Array(63).keys()]);
+  shuffledDeck   = shuffle([...Array(CARDS.length).keys()]);
 
   document.getElementById('max-modal').classList.remove('active');
   document.getElementById('screen-spread').classList.remove('active');
@@ -2531,7 +2532,7 @@ function drawInfiniteCard(el, cardIdx) {
   // Pick a truly random card each click, different from the last drawn
   const lastIdx = infiniteDrawn.length > 0 ? infiniteDrawn[infiniteDrawn.length - 1].cardIdx : -1;
   let newIdx;
-  do { newIdx = Math.floor(Math.random() * 62); } while (newIdx === lastIdx);
+  do { newIdx = Math.floor(Math.random() * CARDS.length); } while (newIdx === lastIdx);
   cardIdx = newIdx;
 
   const isUpright = Math.random() > 0.35;
