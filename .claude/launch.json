@@ -1,0 +1,16 @@
+{
+  "version": "0.0.1",
+  "configurations": [
+    {
+      "name": "哲学占卜",
+      "runtimeExecutable": "zsh",
+      "runtimeArgs": ["-c", "cd /Users/xiangxuan/哲学占卜 && python3 -m http.server 8080"],
+      "port": 8080
+    },
+    {
+      "name": "哲学占卜 (Vercel)",
+      "url": "https://philosophy-divination.vercel.app",
+      "autoPort": true
+    }
+  ]
+}

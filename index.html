@@ -749,6 +749,64 @@ body {
 .memo-textarea:focus { border-color: #5a2880; }
 .memo-textarea::placeholder { color: #c0b090; font-style: italic; }
 
+/* ── Memo edit controls ── */
+.memo-actions { margin-top: 6px; }
+.memo-edit-btn {
+  background: transparent;
+  border: 1px solid #5a2880;
+  border-radius: 4px;
+  color: #5a2880;
+  font-size: 11px;
+  font-family: inherit;
+  padding: 3px 10px;
+  cursor: pointer;
+  transition: background 0.15s;
+}
+.memo-edit-btn:hover { background: rgba(90,40,128,.1); }
+
+.memo-password-input {
+  background: rgba(255,252,240,.8);
+  border: 1px solid rgba(139,105,20,.3);
+  border-radius: 4px;
+  padding: 4px 8px;
+  font-size: 11px;
+  font-family: inherit;
+  color: #2c1800;
+  outline: none;
+  width: 120px;
+}
+.memo-password-input:focus { border-color: #5a2880; }
+
+.memo-submit-btn {
+  background: #5a2880;
+  color: #f8edd5;
+  border: none;
+  border-radius: 4px;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.memo-cancel-btn {
+  background: transparent;
+  border: 1px solid #9a7848;
+  border-radius: 4px;
+  color: #9a7848;
+  padding: 4px 10px;
+  font-size: 11px;
+  font-family: inherit;
+  cursor: pointer;
+  margin-left: 4px;
+}
+.memo-status {
+  font-size: 10px;
+  margin-top: 4px;
+  font-family: sans-serif;
+}
+.memo-status.success { color: #4a7a1a; }
+.memo-status.error   { color: #a03030; }
+
 /* ── Mobile memo ── */
 @media (max-width: 640px) {
   .cards-browser-body { flex-direction: column; }
@@ -1193,7 +1251,16 @@ body {
     <div id="memo-panel" class="memo-panel">
       <div class="memo-panel-header">
         <h3>📝 小编手册</h3>
-        <span class="memo-panel-sub">对每张牌记录你自己的感悟</span>
+        <span class="memo-panel-sub" id="memo-panel-sub">对每张牌记录你自己的感悟</span>
+        <div class="memo-actions" id="memo-actions">
+          <button class="memo-edit-btn" id="memo-edit-btn" onclick="enableMemoEdit()">✏️ 编辑</button>
+        </div>
+        <div class="memo-password-row" id="memo-password-row" style="display:none; margin-top: 8px;">
+          <input type="password" id="memo-password" placeholder="编辑密码" class="memo-password-input">
+          <button class="memo-submit-btn" id="memo-submit-btn" onclick="submitMemoEdit()">确定</button>
+          <button class="memo-cancel-btn" id="memo-cancel-btn" onclick="cancelMemoEdit()">取消</button>
+        </div>
+        <div class="memo-status" id="memo-status" style="display:none;"></div>
       </div>
       <div class="memo-panel-list" id="memo-panel-list"></div>
     </div>
@@ -2557,38 +2624,55 @@ function showAllCards() {
 }
 
 /* ── Memo / 小编手册 ── */
-const MEMO_KEY = 'zb_memos';
+let serverMemos = {};
+let isMemoEditing = false;
 
-function getMemos() {
-  try { return JSON.parse(localStorage.getItem(MEMO_KEY)) || {}; }
-  catch { return {}; }
+async function loadServerMemos() {
+  try {
+    const res = await fetch('/api/memos');
+    if (res.ok) {
+      const rows = await res.json();
+      serverMemos = {};
+      rows.forEach(r => { serverMemos[r.card_id] = r.note; });
+    }
+  } catch {}
 }
-function setMemos(obj) { localStorage.setItem(MEMO_KEY, JSON.stringify(obj)); }
 
 function toggleMemo() {
   const panel = document.getElementById('memo-panel');
+  const wasClosed = !panel.classList.contains('open');
   panel.classList.toggle('open');
+  if (wasClosed) {
+    refreshMemoPanel();
+  }
+}
+
+async function refreshMemoPanel() {
+  await loadServerMemos();
+  buildMemoPanel();
 }
 
 function buildMemoPanel() {
   const list = document.getElementById('memo-panel-list');
   list.innerHTML = '';
-  const memos = getMemos();
 
   CARDS.forEach((card, idx) => {
     const item = document.createElement('div');
     item.className = 'memo-card-item';
     item.id = 'memo-item-' + card.id;
 
+    const note = serverMemos[card.id] || '';
+
     item.innerHTML = `
       <div class="memo-card-sym">${card.sym}</div>
       <div class="memo-card-info">
         <div class="memo-card-name">${card.name}<span class="memo-card-id">#${card.id}</span></div>
         <div class="memo-card-kw">${card.kw}</div>
-        <textarea class="memo-textarea" rows="1" placeholder="写下你的感悟…"
-          oninput="saveMemo(${card.id}, this.value)"
+        <textarea class="memo-textarea" rows="1" placeholder="暂无笔记…"
+          oninput="onMemoInput(${card.id}, this.value)"
           onfocus="this.style.height='';this.style.height=Math.max(60,this.scrollHeight)+'px'"
-        >${memos[card.id] || ''}</textarea>
+          ${!isMemoEditing ? 'readonly' : ''}
+        >${note}</textarea>
       </div>`;
 
     list.appendChild(item);
@@ -2601,13 +2685,73 @@ function buildMemoPanel() {
       ta.style.height = Math.max(60, ta.scrollHeight) + 'px';
     }
   });
+
+  // Update sub text when not editing
+  if (!isMemoEditing) {
+    document.getElementById('memo-panel-sub').textContent = '对每张牌记录你自己的感悟';
+  }
 }
 
-function saveMemo(cardId, text) {
-  const memos = getMemos();
-  if (text.trim()) memos[cardId] = text;
-  else delete memos[cardId];
-  setMemos(memos);
+let memoDraft = {};
+function onMemoInput(cardId, text) {
+  memoDraft[cardId] = text;
+}
+
+function enableMemoEdit() {
+  document.getElementById('memo-password-row').style.display = 'block';
+  document.getElementById('memo-password').focus();
+}
+
+function cancelMemoEdit() {
+  document.getElementById('memo-password-row').style.display = 'none';
+  document.getElementById('memo-password').value = '';
+}
+
+async function submitMemoEdit() {
+  const password = document.getElementById('memo-password').value.trim();
+  if (!password) return;
+  const statusEl = document.getElementById('memo-status');
+
+  statusEl.style.display = 'block';
+  statusEl.textContent = '验证中…';
+  statusEl.className = 'memo-status';
+
+  // Send merged: serverMemos + any local draft changes
+  const toSend = { ...serverMemos, ...memoDraft };
+  // Remove empty entries
+  Object.keys(toSend).forEach(k => { if (!toSend[k] || !toSend[k].trim()) delete toSend[k]; });
+
+  try {
+    const res = await fetch('/api/memos', {
+      method: 'PUT',
+      headers: {
+        'Content-Type': 'application/json',
+        'Authorization': 'Editor ' + password
+      },
+      body: JSON.stringify(toSend)
+    });
+
+    if (res.ok) {
+      statusEl.textContent = '✓ 保存成功！';
+      statusEl.className = 'memo-status success';
+      isMemoEditing = false;
+      document.getElementById('memo-password-row').style.display = 'none';
+      document.getElementById('memo-password').value = '';
+      memoDraft = {};
+      document.getElementById('memo-panel-sub').textContent = '对每张牌记录你自己的感悟';
+      await refreshMemoPanel();
+    } else {
+      const err = await res.json().catch(() => ({}));
+      statusEl.textContent = '✗ ' + (err.error || '密码错误或保存失败');
+      statusEl.className = 'memo-status error';
+    }
+  } catch (e) {
+    statusEl.textContent = '✗ 网络错误: ' + e.message;
+    statusEl.className = 'memo-status error';
+  }
+
+  // hide status after 3s
+  setTimeout(() => { statusEl.style.display = 'none'; }, 3000);
 }
 
 function resetApp() {
