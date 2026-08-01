@@ -14,10 +14,18 @@ module.exports = async function handler(req, res) {
   // GET — anyone can read memos
   if (req.method === 'GET') {
     try {
-      const rows = await sbGet(`${MEMOS_TABLE}?select=card_id,note,updated_at&order=card_id.asc`);
+      const apiUrl = `${process.env.SUPABASE_URL}/rest/v1/${MEMOS_TABLE}?select=card_id,note,updated_at&order=card_id.asc`;
+      const response = await fetch(apiUrl, {
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+        }
+      });
+      if (!response.ok) throw new Error(`Supabase error ${response.status}: ${await response.text()}`);
+      const rows = await response.json();
       res.status(200).json(rows || []);
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'GET failed: ' + err.message });
     }
     return;
   }
@@ -36,34 +44,56 @@ module.exports = async function handler(req, res) {
 
     try {
       // Get existing card_ids
-      const existing = await sbGet(`${MEMOS_TABLE}?select=card_id`);
+      const getUrl = `${process.env.SUPABASE_URL}/rest/v1/${MEMOS_TABLE}?select=card_id`;
+      const getRes = await fetch(getUrl, {
+        headers: {
+          'apikey': process.env.SUPABASE_SERVICE_KEY,
+          'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+        }
+      });
+      const existing = getRes.ok ? await getRes.json() : [];
       const existingIds = new Set((existing || []).map(r => r.card_id));
 
       const entries = Object.entries(memos);
+      const baseUrl = `${process.env.SUPABASE_URL}/rest/v1/${MEMOS_TABLE}`;
+      const headers = {
+        'Content-Type': 'application/json',
+        'apikey': process.env.SUPABASE_SERVICE_KEY,
+        'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`,
+        'Prefer': 'return=representation'
+      };
 
       for (const [card_id, note] of entries) {
         const cardId = parseInt(card_id);
         if (isNaN(cardId)) continue;
 
         if (note && note.trim()) {
-          // Upsert: update if exists, insert if not
           const data = { card_id: cardId, note: note.trim(), updated_at: new Date().toISOString() };
           if (existingIds.has(cardId)) {
-            await sbPatch(MEMOS_TABLE, `card_id=eq.${cardId}`, data);
+            await fetch(`${baseUrl}?card_id=eq.${cardId}`, {
+              method: 'PATCH', headers, body: JSON.stringify(data)
+            });
           } else {
-            await sbPost(MEMOS_TABLE, data);
+            await fetch(baseUrl, {
+              method: 'POST', headers, body: JSON.stringify(data)
+            });
           }
         } else {
-          // Delete if note is empty
           if (existingIds.has(cardId)) {
-            await sbDelete(MEMOS_TABLE, `card_id=eq.${cardId}`);
+            await fetch(`${baseUrl}?card_id=eq.${cardId}`, {
+              method: 'DELETE',
+              headers: {
+                'apikey': process.env.SUPABASE_SERVICE_KEY,
+                'Authorization': `Bearer ${process.env.SUPABASE_SERVICE_KEY}`
+              }
+            });
           }
         }
       }
 
       res.status(200).json({ success: true });
     } catch (err) {
-      res.status(500).json({ error: err.message });
+      res.status(500).json({ error: 'PUT failed: ' + err.message });
     }
     return;
   }
